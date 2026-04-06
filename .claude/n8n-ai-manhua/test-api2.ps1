@@ -1,4 +1,4 @@
-$apiKey = "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"
+$apiKey = "YOUR_API_KEY_HERE"
 $headers = @{
     "x-api-key" = $apiKey
     "anthropic-version" = "2023-06-01"
