@@ -1,0 +1,30 @@
+# AI Business Intelligence Platform - Core Library
+# Requirements for .claude/core/
+
+pydantic>=2.0.0
+httpx>=0.27.0
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+loguru>=0.7.0
+
+# Optional: ML/AI
+scikit-learn>=1.4.0
+nltk>=3.8.0
+pandas>=2.0.0
+numpy>=1.26.0
+
+# Optional: Selenium (for JS-rendered pages)
+selenium>=4.15.0
+webdriver-manager>=4.0.0
+
+# Optional: Lark (飞书)
+# lark-oapi>=1.3.0
+
+# Optional: reportlab (PDF generation)
+reportlab>=4.0.0
+
+# Optional: jinja2 (HTML templates)
+jinja2>=3.1.0
+
+# Scheduling
+apscheduler>=3.10.0

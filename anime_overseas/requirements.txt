@@ -1,0 +1,84 @@
+# 动漫出海运营 · Python 环境依赖
+# anime_overseas/requirements.txt
+# 安装命令: pip install -r requirements.txt
+
+# ===== 核心依赖 =====
+
+# 翻译
+# DeepL API (推荐，高质量翻译)
+deepl>=1.17.0
+
+# OpenAI (备选翻译 + AI文案生成)
+openai>=1.30.0
+
+# Google Translate (免费备选)
+# googletrans>=4.0.0  # 注：googletrans 已停止维护，使用 deepl/openai
+
+# ===== 视频处理 =====
+
+# FFmpeg 绑定（必须先安装 ffmpeg）
+# Windows: winget install ffmpeg
+# macOS: brew install ffmpeg
+# Linux: sudo apt install ffmpeg
+
+# ===== 数据处理 =====
+
+# Excel 操作
+openpyxl>=3.1.0
+
+# 通用数据
+pandas>=2.0.0
+numpy>=1.24.0
+
+# ===== 图像处理 =====
+
+# 封面设计
+Pillow>=10.0.0
+
+# ===== 网络请求 =====
+
+# API 请求
+requests>=2.31.0
+httpx>=0.27.0
+
+# ===== YouTube API =====
+
+# Google API (YouTube 数据获取)
+google-api-python-client>=2.100.0
+google-auth>=2.25.0
+google-auth-oauthlib>=1.2.0
+
+# ===== 邮件 =====
+
+# SMTP 邮件发送（内置，无需额外安装）
+# 使用 Python 内置 smtplib
+
+# ===== 开发工具 =====
+
+# 日志
+coloredlogs>=15.0.0
+
+# 环境变量
+python-dotenv>=1.0.0
+
+# ===== 可选增强 =====
+
+# TikTok API (需官方白名单)
+# tiktok-sdk>=0.1.0
+
+# Instagram API
+# instagram-basic-display>=1.0.0
+
+# ===== 安装指南 =====
+
+# 最小安装（仅核心功能）:
+# pip install openai deepl openpyxl Pillow requests
+
+# 完整安装:
+# pip install -r requirements.txt
+
+# YouTube API 额外配置:
+# 1. 在 Google Cloud Console 创建项目
+# 2. 启用 YouTube Data API v3
+# 3. 创建 OAuth 2.0 客户端ID
+# 4. 下载 credentials.json 到项目目录

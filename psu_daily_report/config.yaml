@@ -1,0 +1,64 @@
+# PSU 每日銷售報告自動化設定檔
+
+# 目標品牌
+brands:
+  - name: "華碩"
+    aliases: ["ASUS", "Asus", "asus"]
+  - name: "技嘉"
+    aliases: ["GIGABYTE", "Gigabyte", "gigabyte"]
+  - name: "微星"
+    aliases: ["MSI", "Msi", "msi"]
+  - name: "海盜船"
+    aliases: ["Corsair", "CORSAIR", "corsair"]
+  - name: "海韻"
+    aliases: ["Seasonic", "SEASONIC", "seasonic"]
+  - name: "Antec"
+    aliases: ["ANTEC", "antec"]
+  - name: "酷冷至尊"
+    aliases: ["Cooler Master", "COOLER MASTER", "coolermaster", "CoolerMaster"]
+  - name: "BQT"
+    aliases: ["BQT", "bqt"]
+  - name: "九州風神"
+    aliases: ["DeepCool", "DEEPCOOL", "deepcool"]
+  - name: "聯力"
+    aliases: ["Lian Li", "LIAN LI", "lianli"]
+
+# 爬蟲設定
+crawler:
+  timeout: 30
+  retry: 3
+  delay_between_requests: 2  # 秒
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+# MiniMax API 設定
+minimax:
+  api_key: "YOUR_MINIMAX_API_KEY_HERE"
+  base_url: "https://api.minimax.chat/v1"
+  model: "MiniMax-Text-01"
+  max_tokens: 4096
+
+# Email 設定
+email:
+  smtp_server: "smtp.163.com"
+  smtp_port: 465
+  sender: "h13751019800@163.com"
+  password: "YOUR_EMAIL_AUTH_CODE_HERE"
+  recipient: "h13751019800@163.com"
+  # 若要寄給多個收件人，用逗號分隔
+  # recipient: "h13751019800@163.com, another@example.com"
+
+# 任務排程設定
+schedule:
+  # Windows Task Scheduler 格式：每天早上 9 點
+  time: "09:00"
+  # 是否在成功後發送通知（可選）
+  notify_on_success: false
+
+# 輸出設定
+output:
+  # 報告保存目錄（相對於本腳本目錄）
+  report_dir: "reports"
+  # 是否保存原始數據
+  save_raw_data: true
+  # 報告檔名前綴
+  report_prefix: "PSU_Report"

@@ -1,0 +1,64 @@
+prompt:
+  id: it_news_summary
+  name: IT新聞摘要
+  version: "1.0"
+  model: claude-sonnet-4
+  created: "2026-04-06"
+  updated: "2026-04-06"
+
+  system: |
+    你是一個專業的科技行業分析師，擅長從多個來源快速提取關鍵信息。
+
+    ## 你的優勢
+    - 熟悉 TechCrunch、AnandTech、IT之家 等科技新聞來源
+    - 能夠處理中英文新聞
+    - 善於識別新聞中的關鍵人物、公司和技術
+
+    ## 分析框架
+    1. 新聞事實（5W1H）
+    2. 行業影響評估
+    3. 關聯技術/公司分析
+    4. 趨勢判斷
+
+  user_template: |
+    請分析以下新聞，生成結構化摘要：
+
+    ## 要求
+    1. 每篇新聞提取：標題、來源、時間、關鍵人物/公司、要點
+    2. 按行業分類：AI基礎設施 / PC零組件 / 存儲 / 雲服務 / 其他
+    3. 生成50字內的AI摘要
+    4. 標註新聞重要性（1-5星）
+
+    ## 新聞內容
+    {content}
+
+    ## 輸出格式（JSON）
+    ```json
+    {
+      "summaries": [
+        {
+          "title": "標題",
+          "source": "來源",
+          "time": "時間",
+          "key_entities": ["人物/公司"],
+          "category": "分類",
+          "summary": "50字摘要",
+          "importance": 4
+        }
+      ],
+      "trends": ["趨勢1", "趨勢2"],
+      "ai_summary": "總體分析100字"
+    }
+    ```
+
+  variables:
+    - name: content
+      type: text
+      description: 新聞內容（可為多篇）
+
+  evaluation_criteria:
+    - 是否覆蓋所有新聞來源
+    - 摘要是否準確且簡潔
+    - 分類是否正確
+    - 是否包含關鍵人物/公司
+    - 重要性評級是否合理

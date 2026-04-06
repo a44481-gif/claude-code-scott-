@@ -1,0 +1,85 @@
+name: lark-gpu-research
+description: 顯卡電源線燒毀研究助手 - 收集、整理全球平台上GPU電源接口燒毀案例。當用戶需要收集顯卡電源線燒毀案例、整理研究報告、管理GPU故障數據庫時使用。
+
+commands:
+  - name: gpu-research
+    description: 執行 GPU 電源線燒毀研究
+    arguments:
+      - name: mode
+        type: string
+        required: false
+        default: all
+        description: |
+          執行模式:
+          - all: 完整流程 (收集→生成→發送)
+          - collect: 只收集數據
+          - generate: 只生成報告
+          - stats: 顯示統計信息
+          - send: 發送郵件
+
+    examples:
+      - "/gpu-research"
+      - "/gpu-research --mode stats"
+      - "/gpu-research collect"
+
+  - name: gpu-stats
+    description: 顯示 GPU 案例統計信息
+
+  - name: gpu-report
+    description: 生成並發送研究報告
+
+prompts:
+  - |
+    執行 GPU 電源線燒毀研究完整流程:
+    1. 收集全球各平台的顯卡電源線燒毀案例
+    2. 生成完整研究報告 (HTML/Markdown/JSON)
+    3. 發送郵件通知
+
+  - |
+    收集顯卡電源線燒毀案例:
+    - 英文平台: Reddit, Tom's Hardware, Gamers Nexus, VideoCardz
+    - 中文平台: 知乎, Bilibili, NGA, 百度貼吧
+    - 日文平台: 価格.com, AKIBA PC Hotline!
+    - 歐洲平台: Hardwareluxx, Guru3D, ComputerBase
+
+  - |
+    生成研究報告:
+    - 包含所有收集到的案例數據
+    - 按平台、地區、GPU型號分類統計
+    - 技術分析與預防建議
+
+config:
+  email:
+    smtp_host: smtp.163.com
+    smtp_port: 465
+    sender_email: h13751019800@163.com
+
+  research:
+    topics:
+      - RTX 4090 12VHPWR 熔化
+      - 顯卡供電接口燒毀
+      - GPU power connector burn
+      - 12VHPWR melted cable
+
+    platforms:
+      en:
+        - Reddit
+        - Tom's Hardware
+        - Gamers Nexus
+        - VideoCardz
+      cn:
+        - 知乎
+        - Bilibili
+        - NGA
+        - 百度貼吧
+      jp:
+        - 価格.com
+        - AKIBA PC Hotline!
+      eu:
+        - Hardwareluxx
+        - Guru3D
+        - ComputerBase
+
+version: 2.0.0
+author: AI Assistant
+updated: 2026-04-06

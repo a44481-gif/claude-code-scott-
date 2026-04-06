@@ -1,0 +1,17 @@
+# 豆包运营代理人 - Python后端依赖
+
+# Web框架
+flask>=2.3.0
+flask-cors>=4.0.0
+
+# 支付宝SDK (商户模式需要)
+# alipay-sdk-python>=3.0.0
+
+# 二维码生成
+qrcode>=7.4.0
+Pillow>=9.0.0
+
+# 数据库 (Python内置sqlite3，无需额外安装)
+
+# 环境变量管理
+python-dotenv>=1.0.0

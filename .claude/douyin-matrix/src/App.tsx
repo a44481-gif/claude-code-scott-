@@ -27,8 +27,10 @@ import {
   TrendingDown,
   Instagram,
   Youtube,
-  Twitter
+  Twitter,
+  Alipay
 } from 'lucide-react'
+import PaymentPage from './pages/PaymentPage'
 import {
   BarChart,
   Bar,
@@ -107,9 +109,10 @@ const navItems = [
   { id: 'content', label: '内容中心', icon: Video },
   { id: 'leads', label: '线索管理', icon: Target },
   { id: 'automation', label: '自动化', icon: Zap },
+  { id: 'payment', label: '收款系统', icon: Alipay },
 ]
 
-type TabType = 'dashboard' | 'accounts' | 'content' | 'leads' | 'automation'
+type TabType = 'dashboard' | 'accounts' | 'content' | 'leads' | 'automation' | 'payment'
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard')
@@ -814,6 +817,9 @@ function App() {
                 </div>
               </div>
             )}
+
+            {/* 收款系统页面 */}
+            {activeTab === 'payment' && <PaymentPage />}
           </main>
         </div>
       </div>

@@ -1,0 +1,78 @@
+# ============================================================
+# 全球 PSU 每日自動化報告 — 配置文件
+# ============================================================
+
+# 目標品牌（可自行增減）
+brands:
+  - name: "華碩（ASUS）"
+    aliases: ["ASUS", "Asus", "asus", "ROG"]
+  - name: "技嘉（GIGABYTE）"
+    aliases: ["GIGABYTE", "Gigabyte", "gigabyte", "AORUS"]
+  - name: "微星（MSI）"
+    aliases: ["MSI", "Msi", "msi"]
+  - name: "海盜船（Corsair）"
+    aliases: ["Corsair", "CORSAIR", "corsair"]
+  - name: "海韻（Seasonic）"
+    aliases: ["Seasonic", "SEASONIC", "seasonic"]
+  - name: "安鈦克（Antec）"
+    aliases: ["ANTEC", "antec"]
+  - name: "酷冷至尊（Cooler Master）"
+    aliases: ["Cooler Master", "COOLER MASTER", "coolermaster", "CoolerMaster"]
+  - name: "BQT"
+    aliases: ["BQT", "bqt", "Be quiet!", "be quiet!", "bequiet"]
+  - name: "九州風神（DeepCool）"
+    aliases: ["DeepCool", "DEEPCOOL", "deepcool"]
+  - name: "聯力（Lian Li）"
+    aliases: ["Lian Li", "LIAN LI", "lianli", "LIAN li"]
+
+# 爬蟲設定
+crawler:
+  timeout: 30           # 單次請求超時（秒）
+  retry: 3              # 失敗重試次數
+  delay_between_requests: 2  # 請求間隔（秒），避免被封
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+# MiniMax API 設定
+# 請前往 https://platform.minimax.chat/ 申請 API Key
+minimax:
+  api_key: ""                    # ← 填入您的 MiniMax API Key
+  base_url: "https://api.minimax.chat/v1"
+  model: "MiniMax-Text-01"       # 或 "abab6.5s-chat"
+  max_tokens: 8192
+  temperature: 0.7
+
+# Email 寄送設定（163.com）
+# 163.com SMTP 密碼 = 授權碼（不是登入密碼）
+# 申請方式：163郵箱 → 設置 → POP3/SMTP/IMAP → 開啟 → 獲取授權碼
+email:
+  smtp_server: "smtp.163.com"
+  smtp_port: 465                 # SSL
+  sender: "h13751019800@163.com"
+  password: "JWxaQXzrCQCWtPu3"                   # ← 填入 163 郵箱授權碼
+  recipient: "h13751019800@163.com"  # 收件人（可多個，用逗號分隔）
+
+# 任務排程設定
+schedule:
+  time: "09:00"                  # 每天早上 9 點執行
+  timezone: "Asia/Shanghai"      # 時區
+
+# 輸出設定
+output:
+  report_dir: "reports"          # 報告保存目錄（相對於本腳本）
+  save_raw_data: true            # 是否保存原始 JSON 數據
+  ppt_enabled: true             # 是否生成 PPT 報告
+
+# 爬蟲範圍設定
+platforms:
+  # 是否啟用（true/false）各區域平台
+  # 可用值: north_america, europe, russia, china, taiwan, asia_east, asia_southeast, latam, middle_east
+  enabled_regions:
+    - north_america
+    - europe
+    - china
+    - taiwan
+    - asia_east
+    - asia_southeast
+    - latam
+    - middle_east
+    - russia

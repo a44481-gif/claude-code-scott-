@@ -1,0 +1,38 @@
+# AI数字人新闻系统依赖包
+# Digital Human News System Dependencies
+
+# 核心依赖
+requests>=2.28.0
+urllib3>=1.26.0
+
+# HTML解析
+beautifulsoup4>=4.11.0
+lxml>=4.9.0
+
+# 数据处理
+python-dateutil>=2.8.0
+
+# 定时任务
+schedule>=1.1.0
+
+# 邮件发送 (如果系统没有内置smtplib)
+# 注: Python 3 内置 smtplib, 不需要额外安装
+
+# JSON处理 (Python 3内置)
+# json - 内置
+
+# 可选: 视频处理相关
+# moviepy>=1.0.3  # 视频剪辑
+# Pillow>=9.0.0   # 图片处理
+
+# 可选: 高级HTML解析
+# selenium>=4.0.0  # 动态网页抓取
+# playwright>=1.20.0  # 浏览器自动化
+
+# 可选: YouTube API
+# google-api-python-client>=2.0.0
+# google-auth>=2.0.0
+
+# 开发依赖
+# pytest>=7.0.0
+# pytest-cov>=3.0.0
