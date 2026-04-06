@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+*.log
+
+# Node
+node_modules/
+.npm
+package-lock.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+~$*
+
+# Large data files
+*.xlsx
+*.xls
+*.csv
+*.json
+*.html
+
+# Email/Report output
+*.html
+email_result.txt
+python_email_result.txt
+output.txt
+
+# Temporary
+*.tmp
+temp_*
