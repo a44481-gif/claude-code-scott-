@@ -1,0 +1,519 @@
+name: CoBM Daily Report Automation
+
+on:
+  # 定時執行：每天早上 9:00 (北京时间)
+  schedule:
+    - cron: '0 1 * * *'  # UTC 1:00 = 北京 9:00
+
+  # 手動觸發
+  workflow_dispatch:
+    inputs:
+      report_type:
+        description: '報告類型'
+        required: true
+        default: 'daily'
+        type: choice
+        options:
+          - daily
+          - weekly
+          - full_pipeline
+
+  # Push 時自動執行（開發測試）
+  push:
+    branches: [main]
+
+jobs:
+  # ============== 任務1：市場數據爬蟲 ==============
+  crawl_data:
+    name: 數據爬蟲
+    runs-on: ubuntu-latest
+    outputs:
+      timestamp: ${{ steps.crawl.outputs.timestamp }}
+      data_file: ${{ steps.crawl.outputs.data_file }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4 lxml pandas -q
+
+      - name: 爬取市場數據
+        id: crawl
+        env:
+          # GitHub Secrets 中配置
+          SMTP_AUTH_CODE: ${{ secrets.SMTP_AUTH_CODE }}
+        run: |
+          python << 'EOF'
+          import json
+          import os
+          from datetime import datetime
+
+          # 模擬數據爬蟲（實際可替換為真實爬蟲）
+          data = {
+            "timestamp": datetime.now().isoformat(),
+            "gpu_market": {
+              "rtx_5090": {"price": "1599", "tdp": "450W", "status": "有貨"},
+              "rtx_5080": {"price": "999", "tdp": "360W", "status": "有貨"},
+              "rx_9070": {"price": "549", "tdp": "304W", "status": "預售"}
+            },
+            "psu_market": {
+              "trend": "大功率化",
+              "atx3_1_ready": True,
+              "avg_wattage": "850W"
+            },
+            "cobm_products": {
+              "total_models": 20,
+              "wattage_range": "550W-2400W",
+              "top_series": ["Odin PX", "Eragon PX", "Wukong"]
+            }
+          }
+
+          # 保存數據
+          with open("market_data.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+          print(f"數據已保存: market_data.json")
+          print(f"時間戳: {data['timestamp']}")
+
+          # 輸出給後續步驟
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+            f.write(f"timestamp={data['timestamp']}\n")
+            f.write(f"data_file=market_data.json\n")
+          EOF
+
+      - name: Upload data artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: market_data
+          path: market_data.json
+          retention-days: 7
+
+  # ============== 任務2：AI 分析 ==============
+  ai_analysis:
+    name: AI 分析
+    runs-on: ubuntu-latest
+    needs: crawl_data
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Download market data
+        uses: actions/download-artifact@v4
+        with:
+          name: market_data
+          path: .
+
+      - name: Install dependencies
+        run: pip install anthropic -q
+
+      - name: AI 分析
+        env:
+          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+        run: |
+          python << 'EOF'
+          import json
+          import anthropic
+
+          # 讀取數據
+          with open("market_data.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+          # 調用 Claude API 分析
+          if os.environ.get("CLAUDE_API_KEY"):
+            client = anthropic.Anthropic()
+            response = client.messages.create(
+              model="claude-sonnet-4-20250514",
+              max_tokens=2048,
+              messages=[{
+                "role": "user",
+                "content": f"""
+                請分析以下 CoBM 電源市場數據，生成市場洞察報告：
+
+                {json.dumps(data, ensure_ascii=False, indent=2)}
+
+                分析維度：
+                1. AI PC 電源需求趨勢
+                2. CoBM 方案競爭力
+                3. 市場機會與建議
+
+                輸出：繁體中文，500字以內
+                """
+              }]
+            )
+            analysis = response.content[0].text
+          else:
+            analysis = f"""
+            【示範模式】市場分析報告
+
+            生成時間：{data['timestamp']}
+
+            一、AI PC 電源需求趨勢
+            RTX 5090/5080 系列顯示市場對大功率電源需求持續增長。
+            450W TDP 的旗艦卡需要至少 850W 電源，建議重點推廣 1000W+ 白金牌產品。
+
+            二、CoBM 方案競爭力
+            CoBM 20 款產品覆蓋 550W-2400W 全系列，滿足不同 AI PC 配置需求。
+            Active PFC + LLC + SR + DC-DC 架構達到業界領先水平。
+
+            三、市場機會
+            - 電競品牌：ROG、微星 ME-G 系列
+            - ITX 市場：傻瓜超人、喬思伯
+            - 大陸品牌：長城、航嘉
+            """
+
+          # 保存分析結果
+          with open("analysis_report.md", "w", encoding="utf-8") as f:
+            f.write(f"# CoBM 市場分析報告\n\n")
+            f.write(f"**生成時間：{data['timestamp']}**\n\n")
+            f.write(analysis)
+
+          print("分析完成")
+
+          # 上傳分析報告
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+            f.write(f"analysis_file=analysis_report.md\n")
+
+          # 同步到 artifact
+          with open("analysis_report.md", "r") as src:
+            content = src.read()
+          with open("analysis_report.md", "w") as dst:
+            dst.write(content)
+          EOF
+
+      - name: Upload analysis artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis_report
+          path: analysis_report.md
+          retention-days: 30
+
+  # ============== 任務3：生成 PPT 報告 ==============
+  generate_ppt:
+    name: 生成 PPT 報告
+    runs-on: ubuntu-latest
+    needs: ai_analysis
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: .
+          pattern: '*_report'
+          merge-multiple: true
+
+      - name: Install dependencies
+        run: pip install python-pptx -q
+
+      - name: 生成 PPT
+        run: |
+          python << 'EOF'
+          import os
+          import json
+          from datetime import datetime
+          from pptx import Presentation
+          from pptx.util import Inches, Pt
+          from pptx.dml.color import RGBColor
+          from pptx.enum.text import PP_ALIGN
+          from pptx.enum.shapes import MSO_SHAPE
+
+          # 讀取分析報告
+          analysis_text = ""
+          if os.path.exists("analysis_report.md"):
+            with open("analysis_report.md", "r", encoding="utf-8") as f:
+              analysis_text = f.read()
+
+          market_data = {}
+          if os.path.exists("market_data.json"):
+            with open("market_data.json", "r", encoding="utf-8") as f:
+              market_data = json.load(f)
+
+          # 生成 PPT
+          prs = Presentation()
+          prs.slide_width = Inches(10)
+          prs.slide_height = Inches(7.5)
+
+          # 封面
+          slide = prs.slides.add_slide(prs.slide_layouts[6])
+          bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, prs.slide_width, prs.slide_height)
+          bg.fill.solid()
+          bg.fill.fore_color.rgb = RGBColor(26, 82, 118)
+          bg.line.fill.background()
+
+          title = slide.shapes.add_textbox(Inches(0.5), Inches(2.5), Inches(9), Inches(1.5))
+          tf = title.text_frame
+          p = tf.paragraphs[0]
+          p.text = "CoBM 市場分析報告"
+          p.font.size = Pt(40)
+          p.font.bold = True
+          p.font.color.rgb = RGBColor(255, 255, 255)
+          p.alignment = PP_ALIGN.CENTER
+
+          subtitle = slide.shapes.add_textbox(Inches(0.5), Inches(4.2), Inches(9), Inches(1))
+          tf = subtitle.text_frame
+          p = tf.paragraphs[0]
+          p.text = datetime.now().strftime("%Y年%m月%d日")
+          p.font.size = Pt(24)
+          p.font.color.rgb = RGBColor(200, 200, 200)
+          p.alignment = PP_ALIGN.CENTER
+
+          # GPU 市場數據頁
+          slide = prs.slides.add_slide(prs.slide_layouts[6])
+          header = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, prs.slide_width, Inches(0.8))
+          header.fill.solid()
+          header.fill.fore_color.rgb = RGBColor(231, 76, 60)
+          header.line.fill.background()
+
+          title = slide.shapes.add_textbox(Inches(0.5), Inches(0.15), Inches(9), Inches(0.6))
+          tf = title.text_frame
+          p = tf.paragraphs[0]
+          p.text = "GPU 市場動態"
+          p.font.size = Pt(26)
+          p.font.bold = True
+          p.font.color.rgb = RGBColor(255, 255, 255)
+
+          content = slide.shapes.add_textbox(Inches(0.7), Inches(1.2), Inches(8.6), Inches(5.5))
+          tf = content.text_frame
+          tf.word_wrap = True
+
+          if market_data.get("gpu_market"):
+            for gpu, info in market_data["gpu_market"].items():
+              p = tf.add_paragraph()
+              p.text = f"● {gpu.upper()}: TDP {info['tdp']} | 價格 ${info['price']} | {info['status']}"
+              p.font.size = Pt(16)
+              p.space_before = Pt(10)
+              p.font.color.rgb = RGBColor(50, 50, 50)
+
+          # 分析結果頁
+          slide = prs.slides.add_slide(prs.slide_layouts[6])
+          header = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, prs.slide_width, Inches(0.8))
+          header.fill.solid()
+          header.fill.fore_color.rgb = RGBColor(39, 174, 96)
+          header.line.fill.background()
+
+          title = slide.shapes.add_textbox(Inches(0.5), Inches(0.15), Inches(9), Inches(0.6))
+          tf = title.text_frame
+          p = tf.paragraphs[0]
+          p.text = "AI 分析與建議"
+          p.font.size = Pt(26)
+          p.font.bold = True
+          p.font.color.rgb = RGBColor(255, 255, 255)
+
+          content = slide.shapes.add_textbox(Inches(0.7), Inches(1.2), Inches(8.6), Inches(5.5))
+          tf = content.text_frame
+          tf.word_wrap = True
+          p = tf.paragraphs[0]
+          p.text = analysis_text[:1500] if analysis_text else "分析報告內容"
+          p.font.size = Pt(14)
+          p.font.color.rgb = RGBColor(50, 50, 50)
+
+          # 保存
+          timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+          filename = f"CoBM_Report_{timestamp}.pptx"
+          prs.save(filename)
+          print(f"PPT 已生成: {filename}")
+
+          # 上傳 artifact
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+            f.write(f"ppt_file={filename}\n")
+          EOF
+
+      - name: Upload PPT artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobm-report
+          path: CoBM_Report_*.pptx
+          retention-days: 30
+
+  # ============== 任務4：發送郵件 ==============
+  send_email:
+    name: 發送郵件報告
+    runs-on: ubuntu-latest
+    needs: generate_ppt
+    if: github.event_name == 'schedule' || github.event.inputs.report_type != ''
+    steps:
+      - name: Download PPT
+        uses: actions/download-artifact@v4
+        with:
+          name: cobm-report
+          path: .
+          pattern: '*.pptx'
+          merge-multiple: true
+
+      - name: Download analysis
+        uses: actions/download-artifact@v4
+        with:
+          name: analysis_report
+          path: .
+          pattern: '*.md'
+          merge-multiple: true
+
+      - name: Download market data
+        uses: actions/download-artifact@v4
+        with:
+          name: market_data
+          path: .
+          pattern: '*.json'
+          merge-multiple: true
+
+      - name: 發送郵件
+        env:
+          SMTP_AUTH_CODE: ${{ secrets.SMTP_AUTH_CODE }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+        run: |
+          python << 'EOF'
+          import smtplib
+          import os
+          import glob
+          from email.mime.multipart import MIMEMultipart
+          from email.mime.text import MIMEText
+          from email.mime.application import MIMEApplication
+          from datetime import datetime
+
+          # 蒐集附件
+          ppt_files = glob.glob("CoBM_Report_*.pptx")
+          ppt_file = ppt_files[0] if ppt_files else None
+
+          md_files = glob.glob("*.md")
+          md_file = md_files[0] if md_files else None
+
+          print(f"PPT 文件: {ppt_file}")
+          print(f"MD 文件: {md_file}")
+
+          # 讀取分析內容
+          analysis_content = ""
+          if md_file:
+            with open(md_file, "r", encoding="utf-8") as f:
+              analysis_content = f.read()
+
+          # 發送郵件
+          msg = MIMEMultipart('mixed')
+          msg['Subject'] = f'CoBM 市場分析報告 {datetime.now().strftime("%Y-%m-%d")}'
+          msg['From'] = os.environ.get('GMAIL_USER', 'scott365888@gmail.com')
+          msg['To'] = 'scott365888@gmail.com'  # 或客戶郵箱
+
+          # HTML 正文
+          html = f"""
+          <html><body style="font-family: Arial; padding: 20px; color: #333;">
+          <div style="background: linear-gradient(135deg, #1a5276, #2e86c1); color: white; padding: 20px; border-radius: 8px;">
+            <h2 style="margin: 0;">CoBM 市場分析報告</h2>
+            <p style="margin: 5px 0 0;">自動生成時間：{datetime.now().strftime("%Y-%m-%d %H:%M")} (北京時間)</p>
+          </div>
+
+          <div style="padding: 20px; background: #f9f9f9;">
+            <h3>📊 GPU 市場動態</h3>
+            <p>• RTX 5090: TDP 450W, 旗艦需求旺盛</p>
+            <p>• RTX 5080: TDP 360W, 性價比之選</p>
+            <p>• RX 9070: TDP 304W, AMD 強勢反擊</p>
+
+            <h3>💡 分析摘要</h3>
+            <p>{analysis_content[:500] if analysis_content else '請查看完整報告...'}</p>
+
+            <hr style="margin: 20px 0;">
+
+            <p><strong>完整報告見附件 (.pptx)</strong></p>
+            <p style="font-size: 12px; color: #666;">
+              本報告由 CoBM AI 自動化系統生成<br>
+              聯絡窗口：scott365888@gmail.com | 微信：pts9800
+            </p>
+          </div>
+          </body></html>
+          """
+          msg.attach(MIMEText(html, 'html', 'utf-8'))
+
+          # 附加 PPT
+          if ppt_file and os.path.exists(ppt_file):
+            with open(ppt_file, 'rb') as f:
+              part = MIMEApplication(f.read(), Name=os.path.basename(ppt_file))
+              part['Content-Disposition'] = f'attachment; filename="{os.path.basename(ppt_file)}"'
+              msg.attach(part)
+            print(f"已附加: {ppt_file}")
+
+          # 發送
+          try:
+            smtp = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+            smtp.login(os.environ.get('GMAIL_USER', ''), os.environ.get('SMTP_AUTH_CODE', ''))
+            smtp.sendmail(msg['From'], msg['To'], msg.as_string())
+            smtp.quit()
+            print("郵件發送成功！")
+          except Exception as e:
+            print(f"郵件發送失敗: {e}")
+
+          print("任務完成！")
+          EOF
+
+  # ============== 任務5：部署到 GitHub Pages ==============
+  deploy_pages:
+    name: 更新數據庫
+    runs-on: ubuntu-latest
+    needs: generate_ppt
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: reports
+          pattern: '*_report'
+          merge-multiple: true
+
+      - name: Update report index
+        run: |
+          python << 'EOF'
+          import os
+          import json
+          from datetime import datetime
+          from glob import glob
+
+          # 蒐集所有報告
+          reports = []
+          for f in glob("reports/*.md") + glob("reports/*.json"):
+            reports.append({
+              "name": os.path.basename(f),
+              "path": f,
+              "size": os.path.getsize(f)
+            })
+
+          # 生成索引
+          index = {
+            "last_updated": datetime.now().isoformat(),
+            "reports_count": len(reports),
+            "reports": reports
+          }
+
+          with open("reports/index.json", "w", encoding="utf-8") as f:
+            json.dump(index, f, ensure_ascii=False, indent=2)
+
+          print(f"索引已更新，共 {len(reports)} 份報告")
+          EOF
+
+      - name: Commit reports
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add reports/
+          git commit -m "Update reports $(date +'%Y-%m-%d %H:%M')" || echo "No changes to commit"
+          git push

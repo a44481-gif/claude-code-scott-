@@ -433,7 +433,7 @@ class ReportGenerator:
                 <div class="chart-item">
                     <div class="chart-title">🖥️ 按 GPU 型號分佈</div>
                     <div class="bar-chart">
-                        {self._generate_bar_chart(stats['by_gpu'], use_colors=True)}
+                        {self._generate_bar_chart(stats['by_gpu_brand'], use_colors=True)}
                     </div>
                 </div>
             </div>

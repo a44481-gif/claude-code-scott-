@@ -101,8 +101,9 @@ gpu_research/
 
 ## 聯繫方式
 
-- 郵箱: h13751019800@163.com
-- 飛書文檔: https://www.feishu.cn/docx/O3Ggd7FtWo9kgsxwpLPcsLbMncS
+- **Email**: scott365888@gmail.com
+- **微信**: PTS9800
+- 飛書文檔: https://www.feishu.cn/docx/DIBjdIZnJopfuXx77eMcloNMn5e
 
 ---
 

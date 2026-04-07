@@ -157,7 +157,6 @@ class PaymentRecord:
             "exchange_rate": self.exchange_rate,
             "date": self.date,
             "status": self.status,
-            "settled_at": self.settled_at,
         }
 
 
@@ -203,7 +202,8 @@ class PaymentAgent:
                     # backward compat: rename 'date' key
                     if "date" in r and "date_str" not in r:
                         r["date_str"] = r.pop("date")
-                    self.settled_at = getattr(record, "settled_at", None) if isinstance(record, PaymentRecord) else (record.get("settled_at") if isinstance(record, dict) else None)
+                    self.records.append(PaymentRecord(**r))
+                logger.info(f"已加载 {len(self.records)} 条支付记录")
             except Exception as e:
                 logger.error(f"加载支付记录失败: {e}")
 

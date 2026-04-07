@@ -50,9 +50,15 @@ prompts:
 
 config:
   email:
-    smtp_host: smtp.163.com
+    smtp_host: smtp.gmail.com
     smtp_port: 465
-    sender_email: h13751019800@163.com
+    sender_email: scott365888@gmail.com
+
+  contact:
+    email: scott365888@gmail.com
+    wechat: PTS9800
+
+  lark_doc: https://www.feishu.cn/docx/DIBjdIZnJopfuXx77eMcloNMn5e
 
   research:
     topics:

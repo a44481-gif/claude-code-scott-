@@ -160,7 +160,8 @@ sender.send_email('主題', report, ['recipient@example.com'])
 
 ## 📧 聯繫
 
-如有问题请联系: h13751019800@163.com
+- **Email**: scott365888@gmail.com
+- **微信**: PTS9800
 
 ## 📄 許可證
 

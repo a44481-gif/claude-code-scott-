@@ -12,10 +12,10 @@ from typing import List
 @dataclass
 class EmailConfig:
     """郵箱配置"""
-    smtp_host: str = 'smtp.163.com'
+    smtp_host: str = 'smtp.gmail.com'
     smtp_port: int = 465
-    sender_email: str = 'h13751019800@163.com'
-    sender_auth_code: str = 'JWxaQXzrCQCWtPu3'
+    sender_email: str = 'scott365888@gmail.com'
+    sender_auth_code: str = ''
     use_ssl: bool = True
 
 
