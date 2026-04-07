@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # 收款系统
+  payment-app:
+    build: .
+    container_name: scott-payment
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - ALIPAY_MODE=${ALIPAY_MODE:-personal}
+      - ALIPAY_APP_ID=${ALIPAY_APP_ID}
+      - ALIPAY_PRIVATE_KEY=${ALIPAY_PRIVATE_KEY}
+      - ALIPAY_PUBLIC_KEY=${ALIPAY_PUBLIC_KEY}
+      - ALIPAY_NOTIFY_URL=${ALIPAY_NOTIFY_URL}
+      - SMTP_SERVER=${SMTP_SERVER:-smtp.163.com}
+      - SMTP_PORT=${SMTP_PORT:-465}
+      - SENDER_EMAIL=${SENDER_EMAIL}
+      - SENDER_PASSWORD=${SENDER_PASSWORD}
+      - FEISHU_WEBHOOK_URL=${FEISHU_WEBHOOK_URL}
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - SERVERCHAN_SENDKEY=${SERVERCHAN_SENDKEY}
+      - DOMAIN=${DOMAIN:-http://localhost:5000}
+    volumes:
+      - ./data:/app/data
+    networks:
+      - payment-network
+
+  # n8n 自动化 (可选)
+  n8n:
+    image: n8nio/n8n
+    container_name: scott-n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-admin123}
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL}
+    volumes:
+      - n8n-data:/home/node/.n8n
+    networks:
+      - payment-network
+
+networks:
+  payment-network:
+    driver: bridge
+
+volumes:
+  n8n-data:

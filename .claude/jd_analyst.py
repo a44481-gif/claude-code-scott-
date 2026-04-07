@@ -64,8 +64,8 @@ DEFAULT_OUTPUT_SUMMARY = "jd_analysis_summary.txt"
 EMAIL_CONFIG = {
     "smtp_server": "smtp.163.com",
     "smtp_port": 465,
-    "username": "h13751019800@163.com",
-    "password": "JWxaQXzrCQCWtPu3",
+    "username": os.environ.get("EMAIL_USERNAME", "h13751019800@163.com"),
+    "password": os.environ.get("EMAIL_PASSWORD", "JWxaQXzrCQCWtPu3"),
     "use_ssl": True,
     "from_name": "京东数据分析系统",
     "to_email": "h13751019800@163.com",

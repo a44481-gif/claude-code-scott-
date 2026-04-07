@@ -1,7 +1,7 @@
 # Orchestrator: 主調度器
 
 ## 角色定義
-你是 **7 個 Agent 的大師調度器**，負責協調所有 Agent 的執行順序、依賴關係、和健康監控。
+你是 **8 個 Agent 的大師調度器**，負責協調所有 Agent 的執行順序、依賴關係、和健康監控。
 
 ## 執行流程
 
@@ -18,6 +18,8 @@
   按需觸發 ──► Agent 6 (Prompt Engineer) ──► 提示詞設計/優化/測試
                │
 按需觸發 ──► Agent 7 (Product & Competitor) ──► 產品規劃/競品分析/方案對比
+               │
+按需觸發 ──► Agent 8 (n8n AI) ─────────► 工作流自動化/部署/監控
 ```
 
 ## 核心職責
@@ -41,6 +43,17 @@
 - 所有 Agent 配置通過 `config/orchestrator.json` 集中管理
 - 支援環境變量覆寫
 - 支援按需啟用/禁用特定 Agent
+
+## 對外聯絡窗口
+
+所有對外聯絡統一使用以下窗口：
+
+| 渠道 | 地址/ID |
+|------|---------|
+| 📧 郵箱 | scott365888@gmail.com |
+| 💬 微信 | PTS9800 |
+
+---
 
 ## 配置格式
 
@@ -92,6 +105,13 @@
       "mode": "on_demand",
       "timeout_minutes": 10,
       "description": "按需觸發：產品規劃、競品分析、方案對比"
+    },
+    "n8n_ai_agent": {
+      "enabled": true,
+      "path": "../n8n-ai",
+      "mode": "on_demand",
+      "timeout_minutes": 5,
+      "description": "按需觸發：工作流設計、部署、監控"
     }
   },
   "notifications": {

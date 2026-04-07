@@ -1,0 +1,49 @@
+# 對外聯絡窗口配置
+# 統一所有渠道的對外窗口
+
+contacts:
+  primary:
+    name: Scott
+    email: scott365888@gmail.com
+    wechat: PTS9800
+    timezone: Asia/Shanghai
+
+  # 各渠道默認值
+  defaults:
+    email_from: scott365888@gmail.com
+    email_signature: |
+      ---
+      Scott
+      📧 scott365888@gmail.com
+      💬 WeChat: PTS9800
+
+    lark_contact: scott365888@gmail.com
+
+  # 獲客場景的默認回复模板
+  lead_response_template: |
+      感謝您的詢問！
+
+      如需進一步溝通：
+      📧 郵箱：scott365888@gmail.com
+      💬 微信：PTS9800
+
+      我會盡快回覆您！
+
+      Scott
+
+  # 報價單的聯絡信息
+  quotation_signature: |
+      ============================
+      Scott | PC Power Team
+      📧 scott365888@gmail.com
+      💬 WeChat: PTS9800
+      ============================
+
+  # 開發信簽名
+  cold_email_signature: |
+      Best regards,
+      Scott
+      📧 scott365888@gmail.com
+      💬 WeChat: PTS9800
+
+      PC Power - Global Power Supply Solutions

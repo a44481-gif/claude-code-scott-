@@ -1,10 +1,10 @@
 name: JD Market Analysis Automation
 
 on:
-  # 每天 11:00 和 23:00 (UTC+8) 运行
+  # 每天 03:00 和 15:00 (北京时间) 运行
   schedule:
-    - cron: '0 3 * * *'   # 03:00 UTC = 11:00 北京时间
-    - cron: '0 15 * * *'  # 15:00 UTC = 23:00 北京时间
+    - cron: '0 3 * * *'   # 03:00 北京时间
+    - cron: '0 15 * * *'  # 15:00 北京时间
   # 也可手动触发
   workflow_dispatch:
 
@@ -35,12 +35,15 @@ jobs:
         env:
           PYTHONIOENCODING: utf-8
 
-      # 5. 运行分析师
+      # 5. 运行分析师（含邮件发送）
       - name: Run JD Analyst
         run: |
-          python .claude/jd_analyst.py --skip-email
+          python .claude/jd_analyst.py
         env:
           PYTHONIOENCODING: utf-8
+          EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        continue-on-error: true
 
       # 6. 提交结果到 GitHub
       - name: Commit and push results
@@ -49,7 +52,7 @@ jobs:
           git config --local user.name "GitHub Actions Bot"
           git add -A
           git diff --staged --quiet || git commit -m "Auto-update: JD analysis $(date +'%Y-%m-%d %H:%M')"
-          git push || echo "Push failed, will retry..."
+          git push || echo "Push skipped (no changes)"
         continue-on-error: true
 
       # 7. 上传分析报告作为 artifact
@@ -57,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: jd-analysis-report
+          name: jd-analysis-report-${{ github.run_number }}
           path: |
             .claude/jd_analysis_report.xlsx
             .claude/jd_analysis_summary.txt

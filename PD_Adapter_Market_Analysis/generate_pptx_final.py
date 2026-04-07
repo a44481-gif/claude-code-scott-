@@ -1,267 +1,289 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-from pptx import Presentation
-from pptx.util import Inches, Pt
-from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
-from pptx.enum.shapes import MSO_SHAPE
-import os
 
-BG_DARK = RGBColor(13, 17, 23)
-BG_CARD = RGBColor(22, 27, 34)
-BORDER_COLOR = RGBColor(48, 54, 61)
-PRIMARY = RGBColor(30, 111, 239)
-CYAN = RGBColor(0, 212, 255)
-GREEN = RGBColor(63, 185, 80)
-ORANGE = RGBColor(240, 136, 62)
-WHITE = RGBColor(240, 246, 252)
-GRAY = RGBColor(139, 148, 158)
-LIGHT_GRAY = RGBColor(180, 185, 195)
-PURPLE = RGBColor(155, 89, 182)
-
-def sf(shape, color):
-    shape.fill.solid()
-    shape.fill.fore_color.rgb = color
-
-def sl(shape, color=None, width=Pt(1)):
-    shape.line.width = width
-    if color:
-        shape.line.color.rgb = color
-    else:
-        shape.line.fill.background()
-
-def tb(slide, l, t, w, h, text, sz=14, bold=False, color=WHITE, align=PP_ALIGN.LEFT, fn="Microsoft YaHei"):
-    txb = slide.shapes.add_textbox(l, t, w, h)
-    tf = txb.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = text
-    p.font.size = Pt(sz)
-    p.font.bold = bold
-    p.font.color.rgb = color
-    p.font.name = fn
-    p.alignment = align
-    return txb
-
-def rect(slide, l, t, w, h, fill=None, lc=None, lw=Pt(1)):
-    s = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, l, t, w, h)
-    if fill: sf(s, fill)
-    if lc: sl(s, lc, lw)
-    else: s.line.fill.background()
-    return s
-
-def bg(slide):
-    rect(slide, 0, 0, Inches(13.33), Inches(7.5), fill=BG_DARK)
-
-def sn(slide, n):
-    tb(slide, Inches(12.5), Inches(7.1), Inches(0.7), Inches(0.3), f"{n}/25", sz=9, color=GRAY, align=PP_ALIGN.RIGHT)
-
-def ft(slide):
-    tb(slide, Inches(0.3), Inches(7.1), Inches(5), Inches(0.3), "PD Adapter Market Analysis | 2025-2030", sz=8, color=GRAY)
-
-def hdr(slide, title, sub=None):
-    rect(slide, 0, 0, Inches(13.33), Inches(0.06), fill=PRIMARY)
-    tb(slide, Inches(0.4), Inches(0.18), Inches(12.5), Inches(0.55), title, sz=28, bold=True, color=WHITE)
-    if sub:
-        tb(slide, Inches(0.4), Inches(0.68), Inches(12.5), Inches(0.35), sub, sz=12, color=GRAY)
-
-# ==============================================================================
-# SLIDE 1: Cover
-# ==============================================================================
-def s01(prs):
+# SLIDE 7: Regional Market
+def s07(prs):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     bg(s)
-    rect(s, 0, 0, Inches(13.33), Inches(0.08), fill=PRIMARY)
-    for i in range(3):
-        rect(s, Inches(0.5+i*4.2), Inches(2.1), Inches(3.5), Inches(0.015), fill=PRIMARY)
-    tb(s, Inches(0.5), Inches(2.3), Inches(12.3), Inches(1.1),
-       "PD 大電流適配器集成技術應用市場分析", sz=38, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-    tb(s, Inches(0.5), Inches(3.5), Inches(12.3), Inches(0.55),
-       "Global PD High-Current Adapter Integration Technology Market Analysis 2025-2030",
-       sz=16, color=GRAY, align=PP_ALIGN.CENTER)
-    rect(s, Inches(2.3), Inches(4.4), Inches(8.7), Inches(1.0), fill=BG_CARD, lc=BORDER_COLOR)
-    badges = [("$142億 → $287億", PRIMARY), ("CAGR 15.2%", CYAN), ("2025-2030", GREEN)]
-    for i, (txt, col) in enumerate(badges):
-        bx = Inches(2.5+i*2.9)
-        rect(s, bx, Inches(4.55), Inches(2.7), Inches(0.72), fill=col)
-        tb(s, bx, Inches(4.67), Inches(2.7), Inches(0.48), txt, sz=12, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-    tb(s, Inches(4.5), Inches(6.55), Inches(4.3), Inches(0.38),
-       "市場研究報告旗艦版 | 2025年4月", sz=11, color=GRAY, align=PP_ALIGN.CENTER)
-    sn(s, 1)
-    return s
-
-# ==============================================================================
-# SLIDE 2: Disclaimer
-# ==============================================================================
-def s02(prs):
-    s = prs.slides.add_slide(prs.slide_layouts[6])
-    bg(s)
-    hdr(s, "免責聲明與研究方法論")
-    items = [
-        ("數據來源", "本報告數據來源包括：行業協會公開報告、上市公司年報及季報、主要OEM/ODM廠商財務數據、海關進出口統計、第三方調研機構數據庫、以及一級供應商訪談記錄。"),
-        ("估算說明", "市場規模採用多種方法交叉驗證：額值法（出貨量×均價）、供應鏈調研法、以及終端應用拆解法的綜合平均。區域市場數據經過海關和產業調研雙重校正。"),
-        ("研究方法", "本報告採用PEST宏觀分析、波特五力模型、價值鏈分析、及GaN/Si功率半導體滲透率S曲線模型相結合的綜合研究框架。"),
-        ("核心假設", "研究假設包括：全球GDP2025-2030年均增長4.5%、消費電子景氣度溫和復甦、中國廠商持續價格競爭常態化、GaN成本年均下降12-15%等關鍵前提。"),
+    hdr(s, "區域市場格局", "Regional Market Share 2025 vs 2030")
+    cols = ["區域", "2025份額", "2030份額", "CAGR", "變化/備注"]
+    col_x = [Inches(0.4), Inches(2.8), Inches(4.8), Inches(6.8), Inches(9.0)]
+    col_w = [Inches(2.2), Inches(1.8), Inches(1.8), Inches(1.8), Inches(3.5)]
+    for i, h in enumerate(cols):
+        rect(s, col_x[i], Inches(1.1), col_w[i], Inches(0.4), fill=PRIMARY)
+        tb(s, col_x[i], Inches(1.15), col_w[i], Inches(0.32), h, sz=11, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+    data = [
+        ("中國", "48%", "45%", "13.8%", "-3pp / 市場成熟化", PRIMARY),
+        ("北美", "20%", "19%", "14.2%", "-1pp / 穩定增長", CYAN),
+        ("歐洲", "17%", "20%", "18.5%", "+3pp / GaN採用領先", GREEN),
+        ("東南亞", "8%", "10%", "22.0%", "+2pp / 新興市場爆發", ORANGE),
+        ("日韓", "5%", "4%", "12.0%", "-1pp / 成熟市場", PURPLE),
+        ("其他", "2%", "2%", "15.0%", "持平", GRAY),
     ]
-    cols = [PRIMARY, CYAN, GREEN, ORANGE]
-    for i, (title, body) in enumerate(items):
-        top = Inches(1.15)+i*Inches(1.52)
-        rect(s, Inches(0.4), top, Inches(12.5), Inches(1.35), fill=BG_CARD, lc=BORDER_COLOR)
-        rect(s, Inches(0.4), top, Inches(0.12), Inches(1.35), fill=cols[i])
-        tb(s, Inches(0.65), top+Inches(0.08), Inches(12.0), Inches(0.32), title, sz=14, bold=True, color=WHITE)
-        tb(s, Inches(0.65), top+Inches(0.42), Inches(12.0), Inches(0.8), body, sz=10.5, color=LIGHT_GRAY)
-    ft(s); sn(s, 2); return s
+    for ri, (region, r25, r30, cagr, chg, col) in enumerate(data):
+        y = Inches(1.55) + ri * Inches(0.72)
+        bg_fill = BG_CARD if ri % 2 == 0 else RGBColor(28, 33, 40)
+        rect(s, Inches(0.4), y, Inches(12.5), Inches(0.65), fill=bg_fill, lc=BORDER_COLOR)
+        tb(s, col_x[0], y+Inches(0.1), col_w[0], Inches(0.42), region, sz=12, bold=True, color=col)
+        for ci, val in enumerate([r25, r30, cagr, chg]):
+            c_col = GREEN if ci == 2 else WHITE
+            tb(s, col_x[ci+1], y+Inches(0.1), col_w[ci+1], Inches(0.42), val, sz=12, color=c_col, align=PP_ALIGN.CENTER)
+    tb(s, Inches(0.4), Inches(6.0), Inches(12.5), Inches(0.5),
+       "歐洲CAGR 18.5%為全球最高，受益於環保法規推動GaN快充普及；東南亞CAGR 22.0%受益於智能手機滲透率提升",
+       sz=11, color=LIGHT_GRAY)
+    ft(s); sn(s, 7); return s
 
-# ==============================================================================
-# SLIDE 3: Executive Summary
-# ==============================================================================
-def s03(prs):
+# SLIDE 8: Why Integration
+def s08(prs):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     bg(s)
-    hdr(s, "核心發現摘要")
-    metrics = [
-        ("2025 市場規模", "$142億", PRIMARY),
-        ("2030 市場規模", "$287億", CYAN),
-        ("複合年增長率", "15.2%", GREEN),
-        ("2030 集成滲透率", "92%", ORANGE),
+    hdr(s, "為何集成是剛需", "Why Integration is a Must-Have")
+    cards = [
+        ("BOM成本降低", "75-82%", "相比傳統離散方案\n全集成SoC大幅減少\n外圍元件數量", GREEN),
+        ("PCB面積減少", "75%", "高功率密度設計\n同等功率下\n尺寸縮小3/4", PRIMARY),
+        ("開發週期縮短", "50%", "從晶片選型到\n量產時間減半\n加速產品上市", CYAN),
+        ("效率提升", ">95%", "集成優化降低\n開關損耗和\n導通損耗", ORANGE),
     ]
     cw = Inches(2.95)
-    for i, (lbl, val, col) in enumerate(metrics):
-        lft = Inches(0.4)+i*(cw+Inches(0.1))
-        rect(s, lft, Inches(0.82), cw, Inches(1.72), fill=BG_CARD, lc=BORDER_COLOR)
-        rect(s, lft, Inches(0.82), cw, Inches(0.42), fill=col)
-        tb(s, lft, Inches(0.88), cw, Inches(0.32), lbl, sz=11, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        tb(s, lft, Inches(1.32), cw, Inches(1.05), val, sz=34, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-    tb(s, Inches(0.4), Inches(2.72), Inches(12.5), Inches(0.38), "三大核心投資機會", sz=15, bold=True, color=WHITE)
-    opps = [
-        ("1", "GaN單芯片全集成方案", "Navitas、PI、南芯等龍頭搶佔的下一代PD適配器技術高地，預計2027年進入爆發期"),
-        ("2", "中國PD SoC芯片出海", "南芯、智融等廠商的140W以上SoC方案性價比全球領先，有望複製韋爾、博裝微的出海路徑"),
-        ("3", "汽車200-240W市場", "800V EV快充和AI車載設備拉動汽車PD需求，2026-2028年CAGR達38%"),
-    ]
-    for i, (num, title, desc) in enumerate(opps):
-        top = Inches(3.2)+i*Inches(1.35)
-        rect(s, Inches(0.4), top, Inches(12.5), Inches(1.15), fill=BG_CARD, lc=BORDER_COLOR)
-        rect(s, Inches(0.52), top+Inches(0.22), Inches(0.58), Inches(0.58), fill=PRIMARY)
-        tb(s, Inches(0.52), top+Inches(0.3), Inches(0.58), Inches(0.45), num, sz=18, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        tb(s, Inches(1.25), top+Inches(0.08), Inches(11.5), Inches(0.35), title, sz=13, bold=True, color=WHITE)
-        tb(s, Inches(1.25), top+Inches(0.48), Inches(11.5), Inches(0.55), desc, sz=10.5, color=LIGHT_GRAY)
-    ft(s); sn(s, 3); return s
+    for i, (title, val, desc, col) in enumerate(cards):
+        lft = Inches(0.4) + i * (cw + Inches(0.12))
+        rect(s, lft, Inches(1.1), cw, Inches(4.5), fill=BG_CARD, lc=BORDER_COLOR)
+        rect(s, lft, Inches(1.1), cw, Inches(0.45), fill=col)
+        tb(s, lft, Inches(1.15), cw, Inches(0.38), title, sz=13, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        tb(s, lft, Inches(1.7), cw, Inches(1.1), val, sz=38, bold=True, color=col, align=PP_ALIGN.CENTER)
+        rect(s, lft+Inches(0.3), Inches(2.9), cw-Inches(0.6), Inches(0.03), fill=col)
+        tb(s, lft+Inches(0.15), Inches(3.1), cw-Inches(0.3), Inches(2.2), desc, sz=11, color=LIGHT_GRAY, align=PP_ALIGN.CENTER)
+    tb(s, Inches(0.4), Inches(5.9), Inches(12.5), Inches(0.6),
+       "集成方案核心價值：打破功率密度牆 - 從15W/in3到45W/in3，引領PD適配器進入\"小而美\"時代",
+       sz=12, color=LIGHT_GRAY)
+    ft(s); sn(s, 8); return s
 
-# ==============================================================================
-# SLIDE 4: Market Overview
-# ==============================================================================
-def s04(prs):
+# SLIDE 9: Four Architectures
+def s09(prs):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     bg(s)
-    hdr(s, "市場全景 2025→2030")
-    data = [("2025",14.2),("2026",17.1),("2027",20.6),("2028",24.0),("2029",26.8),("2030",28.7)]
-    max_v = 30.0
-    n = len(data)
-    bw = (Inches(11.0)) / n
-    g = Inches(0.04)
-    bh_max = Inches(3.0)
-    for i, (lbl, val) in enumerate(data):
-        bh = (val/max_v)*bh_max
-        bl = Inches(0.6)+i*bw
-        rect(s, bl, Inches(3.5)-bh, bw-g, bh, fill=PRIMARY)
-        tb(s, bl, Inches(3.55)-bh, bw-g, Inches(0.25), f"${val}B", sz=9, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        tb(s, bl, Inches(3.5), bw-g, Inches(0.25), lbl, sz=10, color=GRAY, align=PP_ALIGN.CENTER)
-    tb(s, Inches(0.4), Inches(3.95), Inches(12.5), Inches(0.35), "五大增長驅動力", sz=15, bold=True, color=WHITE)
-    drivers = [
-        ("AI PC/筆電", "140-240W PD快充需求爆發，2025-2028 CAGR達12%", PRIMARY),
-        ("旗艦手機", "100-240W快充全面普及，摺疊手機拉動需求", CYAN),
-        ("電動汽車", "800V平台車載PD適配器標配，200W+需求涌現", GREEN),
-        ("GaN成本下降", "GaN單芯片集成方案成本接近離散方案，滲透率加速", ORANGE),
-        ("快充協議統一", "USB PD3.1 EPR 240W標準全球採用率提升", PURPLE),
+    hdr(s, "四大集成架構深度解析", "Four Integration Architecture Deep Dive")
+    archs = [
+        ("PFC+LLC GaN合封", "PI InnoSwitch4-CZ", "220W", ">95%", "代表：Power Integrations\n優勢：超高效率、可靠性強\n挑戰：成本較高", PRIMARY),
+        ("ACF單芯片", "DK8607 / FAN6966", "120W", "93-94.5%", "代表：DIODES / onsemi\n優勢：成本最低、性價比高\n挑戰：效率上限", CYAN),
+        ("協議+DC-DC SoC", "SC9712 / SW3536", "140W", "92-94%", "代表：南芯 / 智融\n優勢：國產替代首選\n挑戰：PD協議兼容性", GREEN),
+        ("全數字功率", "UCC29950 / JW7726", "240W", ">96%", "代表：TI / 杰華特\n優勢：靈活性最強、數字控制\n挑戰：開發難度大", ORANGE),
     ]
-    for i, (title, desc, col) in enumerate(drivers):
-        top = Inches(4.4)+i*Inches(0.58)
-        rect(s, Inches(0.4), top, Inches(12.5), Inches(0.52), fill=BG_CARD, lc=BORDER_COLOR)
-        rect(s, Inches(0.4), top, Inches(0.1), Inches(0.52), fill=col)
-        tb(s, Inches(0.62), top+Inches(0.04), Inches(2.0), Inches(0.28), title, sz=11, bold=True, color=WHITE)
-        tb(s, Inches(2.7), top+Inches(0.04), Inches(10.0), Inches(0.42), desc, sz=10, color=LIGHT_GRAY)
-    ft(s); sn(s, 4); return s
+    for i, (name, chip, pwr, eff, desc, col) in enumerate(archs):
+        row = i // 2
+        col_i = i % 2
+        lft = Inches(0.4) + col_i * Inches(6.5)
+        top = Inches(1.05) + row * Inches(3.0)
+        rect(s, lft, top, Inches(6.2), Inches(2.8), fill=BG_CARD, lc=BORDER_COLOR)
+        rect(s, lft, top, Inches(6.2), Inches(0.5), fill=col)
+        tb(s, lft+Inches(0.12), top+Inches(0.06), Inches(3.5), Inches(0.38), name, sz=13, bold=True, color=WHITE)
+        tb(s, lft+Inches(3.7), top+Inches(0.06), Inches(2.3), Inches(0.38), "功率: " + pwr, sz=11, color=WHITE, align=PP_ALIGN.RIGHT)
+        tb(s, lft+Inches(0.12), top+Inches(0.58), Inches(3.0), Inches(0.32), "芯片: " + chip, sz=10, color=CYAN)
+        tb(s, lft+Inches(3.2), top+Inches(0.58), Inches(2.8), Inches(0.32), "效率: " + eff, sz=11, bold=True, color=GREEN)
+        rect(s, lft+Inches(0.12), top+Inches(1.0), Inches(5.96), Inches(0.03), fill=col)
+        tb(s, lft+Inches(0.12), top+Inches(1.1), Inches(5.96), Inches(1.6), desc, sz=10.5, color=LIGHT_GRAY)
+    ft(s); sn(s, 9); return s
 
-# ==============================================================================
-# SLIDE 5: Global Market Size
-# ==============================================================================
-def s05(prs):
+# SLIDE 10: Tech Comparison Table
+def s10(prs):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     bg(s)
-    hdr(s, "全球市場規模 2025-2030", "Unit: USD Billions | CAGR 15.2%")
-    data = [("2025",14.2),("2026",17.1),("2027",20.6),("2028",24.0),("2029",26.8),("2030",28.7)]
-    max_v = 30.0
-    n = len(data)
-    bw = (Inches(11.0)) / n
-    g = Inches(0.05)
-    bh_max = Inches(3.2)
-    for i, (lbl, val) in enumerate(data):
-        bh = (val/max_v)*bh_max
-        bl = Inches(0.7)+i*bw
-        rect(s, bl, Inches(3.55)-bh, bw-g, bh, fill=PRIMARY)
-        tb(s, bl, Inches(3.6)-bh, bw-g, Inches(0.25), f"${val}B", sz=10, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        tb(s, bl, Inches(3.5), bw-g, Inches(0.25), lbl, sz=10, color=GRAY, align=PP_ALIGN.CENTER)
-    rect(s, Inches(0.4), Inches(3.9), Inches(12.5), Inches(0.05), fill=CYAN)
-    milestones = [
-        ("2026", "突破$170億", CYAN),
-        ("2028", "出貨量>7.5億台", GREEN),
-        ("2030", "集成滲透率達92%", ORANGE),
+    hdr(s, "四大方案關鍵參數對比", "Technical Parameters Comparison")
+    hdrs = ["方案名稱", "代表芯片", "集成度", "最高功率", "效率", "功率密度", "BOM元件", "成本"]
+    col_x = [Inches(0.4), Inches(2.1), Inches(3.85), Inches(5.25), Inches(6.55), Inches(7.9), Inches(9.5), Inches(10.9)]
+    col_w = [Inches(1.55), Inches(1.6), Inches(1.3), Inches(1.2), Inches(1.2), Inches(1.45), Inches(1.25), Inches(2.1)]
+    for i, h in enumerate(hdrs):
+        rect(s, col_x[i], Inches(1.1), col_w[i], Inches(0.4), fill=PRIMARY)
+        tb(s, col_x[i], Inches(1.15), col_w[i], Inches(0.32), h, sz=10, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+    rows = [
+        ("PFC+LLC GaN", "PI InnoSwitch4", "5星", "220W", ">95%", "45W/in3", "15-20", "$$$", PRIMARY),
+        ("ACF單芯片", "DK8607", "4星", "120W", "93-94.5%", "35W/in3", "20-25", "$$", CYAN),
+        ("協議+DC-DC", "SC9712", "4星", "140W", "92-94%", "30W/in3", "18-22", "$$", GREEN),
+        ("全數字功率", "UCC29950", "3星", "240W", ">96%", "40W/in3", "25-30", "$$$", ORANGE),
+        ("離散基準", "分立IC組合", "2星", "240W", "88-92%", "15W/in3", "60-80", "$", GRAY),
     ]
-    for i, (yr, ms, col) in enumerate(milestones):
-        lft = Inches(0.4)+i*Inches(4.2)
-        rect(s, lft, Inches(4.05), Inches(3.8), Inches(0.55), fill=BG_CARD, lc=BORDER_COLOR)
-        rect(s, lft, Inches(4.05), Inches(0.1), Inches(0.55), fill=col)
-        tb(s, lft+Inches(0.15), Inches(4.1), Inches(1.0), Inches(0.25), yr, sz=12, bold=True, color=col)
-        tb(s, lft+Inches(1.1), Inches(4.12), Inches(2.5), Inches(0.35), ms, sz=11, color=WHITE)
-    rect(s, Inches(9.5), Inches(0.95), Inches(3.3), Inches(0.72), fill=BG_CARD, lc=CYAN, lw=Pt(2))
-    tb(s, Inches(9.6), Inches(1.0), Inches(3.1), Inches(0.28), "6年複合增長率", sz=11, color=GRAY)
-    tb(s, Inches(9.6), Inches(1.25), Inches(3.1), Inches(0.35), "CAGR = 15.2%", sz=18, bold=True, color=CYAN)
-    ft(s); sn(s, 5); return s
+    for ri, row in enumerate(rows):
+        y = Inches(1.55) + ri * Inches(0.9)
+        bg_fill = BG_CARD if ri % 2 == 0 else RGBColor(28, 33, 40)
+        for ci, cell in enumerate(row):
+            tcol = row[-1] if ci == 0 else (LIGHT_GRAY if ci < len(row)-1 else GREEN)
+            rect(s, col_x[ci], y, col_w[ci], Inches(0.82), fill=bg_fill, lc=BORDER_COLOR)
+            align = PP_ALIGN.CENTER if ci > 0 else PP_ALIGN.LEFT
+            bold_f = ci == 0
+            tb(s, col_x[ci]+Inches(0.05), y+Inches(0.2), col_w[ci]-Inches(0.1), Inches(0.42), str(cell), sz=10, bold=bold_f, color=tcol, align=align)
+    ft(s); sn(s, 10); return s
 
-# ==============================================================================
-# SLIDE 6: Power Structure
-# ==============================================================================
-def s06(prs):
+# SLIDE 11: Tech Roadmap
+def s11(prs):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     bg(s)
-    hdr(s, "功率結構演變 2025 vs 2030", "PD Adapter Market Power Segment Shift")
-    tb(s, Inches(0.4), Inches(1.1), Inches(5.5), Inches(0.4), "2025 市場份額", sz=16, bold=True, color=WHITE)
-    p2025 = [("65W", 52, PRIMARY),("100W", 28, CYAN),("140W", 12, GREEN),("240W", 8, ORANGE)]
-    y = Inches(1.55)
-    for lbl, pct, col in p2025:
-        rect(s, Inches(0.5), y, Inches(0.25), Inches(0.3), fill=col)
-        tb(s, Inches(0.82), y-Inches(0.02), Inches(3.5), Inches(0.3), f"{lbl}: {pct}%", sz=13, color=WHITE)
-        y += Inches(0.42)
-    total_w = Inches(5.0)
-    x = Inches(0.5)
-    for lbl, pct, col in p2025:
-        w = total_w * pct / 100
-        rect(s, x, Inches(3.4), w, Inches(0.5), fill=col)
-        if pct >= 10:
-            tb(s, x+Inches(0.05), Inches(3.48), w-Inches(0.1), Inches(0.35), f"{pct}%", sz=10, bold=True, color=WHITE)
-        x += w
-    tb(s, Inches(7.0), Inches(1.1), Inches(5.5), Inches(0.4), "2030 市場份額", sz=16, bold=True, color=WHITE)
-    p2030 = [("65W", 35, PRIMARY),("100W", 30, CYAN),("140W", 20, GREEN),("240W", 15, ORANGE)]
-    y = Inches(1.55)
-    for lbl, pct, col in p2030:
-        rect(s, Inches(7.1), y, Inches(0.25), Inches(0.3), fill=col)
-        tb(s, Inches(7.42), y-Inches(0.02), Inches(3.5), Inches(0.3), f"{lbl}: {pct}%", sz=13, color=WHITE)
-        y += Inches(0.42)
-    x = Inches(7.1)
-    for lbl, pct, col in p2030:
-        w = total_w * pct / 100
-        rect(s, x, Inches(3.4), w, Inches(0.5), fill=col)
-        if pct >= 10:
-            tb(s, x+Inches(0.05), Inches(3.48), w-Inches(0.1), Inches(0.35), f"{pct}%", sz=10, bold=True, color=WHITE)
-        x += w
-    tb(s, Inches(0.4), Inches(4.15), Inches(12.5), Inches(0.35), "各功率段CAGR對比", sz=15, bold=True, color=WHITE)
-    cagrs = [("65W","8.5%",Inches(0.4)),("100W","15.2%",Inches(3.2)),("140W","22.0%",Inches(6.0)),("240W","28.5%",Inches(8.8))]
-    for lbl, cagr, lft in cagrs:
-        rect(s, lft, Inches(4.6), Inches(2.6), Inches(1.3), fill=BG_CARD, lc=BORDER_COLOR)
-        rect(s, lft, Inches(4.6), Inches(2.6), Inches(0.38), fill=PRIMARY)
-        tb(s, lft, Inches(4.65), Inches(2.6), Inches(0.3), lbl, sz=12, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
-        tb(s, lft, Inches(5.1), Inches(2.6), Inches(0.65), cagr, sz=28, bold=True, color=GREEN, align=PP_ALIGN.CENTER)
-    tb(s, Inches(0.4), Inches(6.1), Inches(12.5), Inches(0.5),
-       "洞察：240W功率段增長最快（CAGR 28.5%），主要由AI PC遊戲本和EV車載適配器拉動；65W份額收縮但總量仍居首位",
-       sz=11, color=LIGHT_GRAY)
-    ft(s); sn(s, 6); return s
+    hdr(s, "技術路線圖 2025-2030", "Technology Roadmap 2025-2030")
+    years = ["2025", "2026", "2027", "2028", "2029", "2030"]
+    x_start = Inches(0.6)
+    y_line = Inches(2.2)
+    step = Inches(12.1) / 5
+    rect(s, x_start, y_line, Inches(12.1), Inches(0.04), fill=CYAN)
+    for i, yr in enumerate(years):
+        x = x_start + i * step
+        circ = s.shapes.add_shape(MSO_SHAPE.OVAL, x-Inches(0.18), y_line-Inches(0.16), Inches(0.36), Inches(0.36))
+        sf(circ, PRIMARY); sl(circ, PRIMARY)
+        tb(s, x-Inches(0.4), y_line+Inches(0.28), Inches(0.8), Inches(0.3), yr, sz=12, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+    ms_data = [
+        ("2025", "雙芯片架構", "200-500kHz", "GaN功率級+數字控制器分立", PRIMARY),
+        ("2026", "GaN合封方案", "500-1000kHz", "PFC+LLC合封，效率>95%", CYAN),
+        ("2027", "單芯片GaN SoC", "1-2MHz", "全集成SoC，140W量產", GREEN),
+        ("2028", "全數字功率", "2-3MHz", "數字控制普及，240W標配", ORANGE),
+        ("2029", "GaN+SiC混合", "3-5MHz", "SiC用於PFC，GaN用於DC-DC", PURPLE),
+        ("2030", "GaN單片集成", "5-10MHz", "CMOS工藝GaN，突破功率密度上限", RGBColor(255, 105, 180)),
+    ]
+    for i, (yr, tech, freq, desc, col) in enumerate(ms_data):
+        x = x_start + i * step
+        rect(s, x, y_line-Inches(0.55), Inches(0.04), Inches(0.4), fill=col)
+        top = y_line - Inches(3.2)
+        rect(s, x-Inches(1.5), top, Inches(3.0), Inches(2.5), fill=BG_CARD, lc=BORDER_COLOR)
+        rect(s, x-Inches(1.5), top, Inches(3.0), Inches(0.42), fill=col)
+        tb(s, x-Inches(1.5), top+Inches(0.04), Inches(3.0), Inches(0.35), tech, sz=11, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        tb(s, x-Inches(1.4), top+Inches(0.5), Inches(2.8), Inches(0.32), "頻率: " + freq, sz=10, bold=True, color=col)
+        tb(s, x-Inches(1.4), top+Inches(0.88), Inches(2.8), Inches(1.5), desc, sz=9.5, color=LIGHT_GRAY)
+    ft(s); sn(s, 11); return s
+
+# SLIDE 12: Competitive Landscape
+def s12(prs):
+    s = prs.slides.add_slide(prs.slide_layouts[6])
+    bg(s)
+    hdr(s, "全球競爭格局全景圖", "Global Competitive Landscape")
+    tb(s, Inches(0.4), Inches(1.1), Inches(6.0), Inches(0.4), "國際廠商", sz=16, bold=True, color=PRIMARY)
+    intl = [
+        ("Power Integrations", "$580M", "A+", "GaN合封先驅，PI InnoSwitch4-CZ市場領先"),
+        ("Navitas", "$180M", "B+", "GaN功率IC專家，1000+專利壁壘"),
+        ("Infineon", "全平台", "A", "Si/GaN/SiC全覆蓋，汽車級認證"),
+        ("TI", "全面", "A", "數字功率控制器的系統級優勢"),
+    ]
+    for i, (name, rev, grade, desc) in enumerate(intl):
+        top = Inches(1.6) + i * Inches(1.3)
+        rect(s, Inches(0.4), top, Inches(6.0), Inches(1.15), fill=BG_CARD, lc=BORDER_COLOR)
+        rect(s, Inches(0.4), top, Inches(0.12), Inches(1.15), fill=PRIMARY)
+        tb(s, Inches(0.62), top+Inches(0.08), Inches(2.8), Inches(0.35), name, sz=12, bold=True, color=WHITE)
+        tb(s, Inches(3.5), top+Inches(0.08), Inches(1.2), Inches(0.35), "營收: " + rev, sz=10, color=CYAN)
+        tb(s, Inches(4.8), top+Inches(0.08), Inches(1.4), Inches(0.35), "評級: " + grade, sz=10, bold=True, color=GREEN)
+        tb(s, Inches(0.62), top+Inches(0.48), Inches(5.6), Inches(0.58), desc, sz=10, color=LIGHT_GRAY)
+    tb(s, Inches(6.8), Inches(1.1), Inches(6.0), Inches(0.4), "中國廠商", sz=16, bold=True, color=ORANGE)
+    cn = [
+        ("南芯半導體", "Pre-IPO", "A-", "PD SoC市場份額領先，SC9712旗艦"),
+        ("智融科技", "Pre-IPO", "A-", "多口PD晶片，性價比之王"),
+        ("英集芯", "A股", "B+", "USB Hub+PD combo晶片"),
+        ("東科半導體", "創業板", "B", "ACF方案，性價比優勢"),
+        ("杰華特", "科創板", "B+", "全數字功率方案"),
+        ("矽力杰", "A股", "B", "BMS+PD組合方案"),
+    ]
+    for i, (name, stage, grade, desc) in enumerate(cn):
+        col_i = i // 3; row_i = i % 3
+        lft = Inches(6.8) + col_i * Inches(3.15)
+        top = Inches(1.6) + row_i * Inches(1.8)
+        rect(s, lft, top, Inches(3.0), Inches(1.6), fill=BG_CARD, lc=BORDER_COLOR)
+        rect(s, lft, top, Inches(3.0), Inches(0.38), fill=ORANGE)
+        tb(s, lft, top+Inches(0.04), Inches(3.0), Inches(0.3), name, sz=11, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        tb(s, lft+Inches(0.1), top+Inches(0.48), Inches(1.4), Inches(0.28), stage, sz=9.5, color=CYAN)
+        tb(s, lft+Inches(1.6), top+Inches(0.48), Inches(1.2), Inches(0.28), "[" + grade + "]", sz=9.5, bold=True, color=GREEN)
+        tb(s, lft+Inches(0.1), top+Inches(0.82), Inches(2.8), Inches(0.65), desc, sz=9.5, color=LIGHT_GRAY)
+    ft(s); sn(s, 12); return s
+
+# SLIDE 13: SWOT Analysis
+def s13(prs):
+    s = prs.slides.add_slide(prs.slide_layouts[6])
+    bg(s)
+    hdr(s, "國際廠商 vs 中國廠商 SWOT", "SWOT Analysis: International vs Chinese Players")
+    # International SWOT
+    tb(s, Inches(0.4), Inches(1.1), Inches(6.0), Inches(0.4), "國際廠商 (PI / Navitas / Infineon)", sz=13, bold=True, color=PRIMARY)
+    intl_swot = [
+        ("S優勢", "GaN/SiC工藝領先，專利壁壘深厚", PRIMARY),
+        ("W劣勢", "成本高，客戶響應速度慢", ORANGE),
+        ("O機會", "汽車/工業市場門檻高，利潤率可觀", GREEN),
+        ("T威脅", "中國廠商快速追趕，價格戰壓力", CYAN),
+    ]
+    for i, (title, desc, col) in enumerate(intl_swot):
+        top = Inches(1.55) + i * Inches(1.35)
+        rect(s, Inches(0.4), top, Inches(6.0), Inches(1.2), fill=BG_CARD, lc=BORDER_COLOR)
+        rect(s, Inches(0.4), top, Inches(0.12), Inches(1.2), fill=col)
+        rect(s, Inches(0.52), top+Inches(0.1), Inches(0.75), Inches(0.45), fill=col)
+        tb(s, Inches(0.52), top+Inches(0.15), Inches(0.75), Inches(0.38), title, sz=10, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        tb(s, Inches(1.4), top+Inches(0.15), Inches(4.9), Inches(0.9), desc, sz=11, color=WHITE)
+    # Chinese SWOT
+    tb(s, Inches(6.8), Inches(1.1), Inches(6.0), Inches(0.4), "中國廠商 (南芯 / 智融 / 杰華特)", sz=13, bold=True, color=ORANGE)
+    cn_swot = [
+        ("S優勢", "性價比極致，供應鏈響應快，本土市場理解深", PRIMARY),
+        ("W劣勢", "GaN工藝依賴代工，專利壁壘弱，高端汽車認證不足", ORANGE),
+        ("O機會", "消費電子PD SoC市場份額持續擴大，出海加速", GREEN),
+        ("T威脅", "內捲嚴重，價格戰持續，國際廠商專利訴訟風險", CYAN),
+    ]
+    for i, (title, desc, col) in enumerate(cn_swot):
+        top = Inches(1.55) + i * Inches(1.35)
+        rect(s, Inches(6.8), top, Inches(6.0), Inches(1.2), fill=BG_CARD, lc=BORDER_COLOR)
+        rect(s, Inches(6.8), top, Inches(0.12), Inches(1.2), fill=col)
+        rect(s, Inches(6.92), top+Inches(0.1), Inches(0.75), Inches(0.45), fill=col)
+        tb(s, Inches(6.92), top+Inches(0.15), Inches(0.75), Inches(0.38), title, sz=10, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        tb(s, Inches(7.8), top+Inches(0.15), Inches(4.9), Inches(0.9), desc, sz=11, color=WHITE)
+    ft(s); sn(s, 13); return s
+
+# SLIDE 14: Competitive Barriers
+def s14(prs):
+    s = prs.slides.add_slide(prs.slide_layouts[6])
+    bg(s)
+    hdr(s, "核心競爭壁壘與專利格局", "Competitive Barriers & Patent Landscape")
+    # Patent data
+    tb(s, Inches(0.4), Inches(1.1), Inches(12.5), Inches(0.4), "專利壁壘地圖", sz=16, bold=True, color=WHITE)
+    patents = [
+        ("Navitas", "1000+", "GaN功率IC核心專利，侵權風險高", PRIMARY),
+        ("Power Integrations", "800+", "PowiGaN技術，涵蓋LLC/GaN合封架構", CYAN),
+        ("Infineon", "全平台", "Si/GaN/SiC全覆蓋，汽車級專利壁壘", GREEN),
+        ("Texas Instruments", "500+", "數字功率控制專利，軟件+硬件生態", ORANGE),
+    ]
+    for i, (name, count, desc, col) in enumerate(patents):
+        top = Inches(1.6) + i * Inches(1.0)
+        rect(s, Inches(0.4), top, Inches(12.5), Inches(0.85), fill=BG_CARD, lc=BORDER_COLOR)
+        rect(s, Inches(0.4), top, Inches(0.12), Inches(0.85), fill=col)
+        tb(s, Inches(0.65), top+Inches(0.08), Inches(2.0), Inches(0.32), name, sz=12, bold=True, color=WHITE)
+        rect(s, Inches(2.8), top+Inches(0.1), Inches(1.2), Inches(0.55), fill=col)
+        tb(s, Inches(2.8), top+Inches(0.18), Inches(1.2), Inches(0.38), count, sz=14, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        tb(s, Inches(4.2), top+Inches(0.15), Inches(8.5), Inches(0.55), desc, sz=11, color=LIGHT_GRAY)
+    tb(s, Inches(0.4), Inches(5.7), Inches(12.5), Inches(0.4), "四大核心壁壘", sz=16, bold=True, color=WHITE)
+    barriers = [
+        ("專利壁壘", "GaN材料、工藝、驅動架構專利", "Navitas/PI已形成專利網絡", PRIMARY),
+        ("工藝壁壘", "GaN-on-Si外延生長良率", "8英寸GaN量產僅少數玩家", CYAN),
+        ("認證壁壘", "USB-IF認證/汽車AEC-Q100", "認證周期6-18個月", GREEN),
+        ("供應鏈壁壘", "GaN晶圓廠產能集中", "台積電/穩懋佔據70%+份額", ORANGE),
+    ]
+    for i, (title, desc1, desc2, col) in enumerate(barriers):
+        lft = Inches(0.4) + i * Inches(3.15)
+        top = Inches(6.15)
+        rect(s, lft, top, Inches(3.0), Inches(0.85), fill=BG_CARD, lc=BORDER_COLOR)
+        rect(s, lft, top, Inches(3.0), Inches(0.38), fill=col)
+        tb(s, lft, top+Inches(0.04), Inches(3.0), Inches(0.3), title, sz=11, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+        tb(s, lft+Inches(0.1), top+Inches(0.42), Inches(2.8), Inches(0.35), desc1, sz=9, color=LIGHT_GRAY)
+    ft(s); sn(s, 14); return s
+
+# SLIDE 15: Consumer Electronics
+def s15(prs):
+    s = prs.slides.add_slide(prs.slide_layouts[6])
+    bg(s)
+    hdr(s, "消費電子應用", "Consumer Electronics Applications")
+    apps = [
+        ("AI PC / 筆電", "140-240W", "$45B", "12%", "蘋果/戴爾/聯想/華為",
+         "AI PC標配240W快充，2025年AI PC滲透率預計突破25%，全球筆電PD適配器市場爆發", PRIMARY),
+        ("旗艦手機 / 摺疊機", "100-150W", "$38B", "8%",
+         "蘋果/三星/小米/OPPO",
+         "摺疊手機對便攜性要求高，PD 100W+微型化適配器需求持續攀升", CYAN),
+        ("遊戲設備", "45-240W", "$12B", "25%",
+         "任天堂/Valve/華碩/索尼",
+         "遊戲本適配器功率突破200W，Switch 2和PS5 Pro標配PD快充需求爆發", GREEN),
+    ]
+    for i, (name, pwr, market, cagr, vendors, desc, col) in enumerate(apps):
+        top = Inches(1.1) + i * Inches(2.05)
+        rect(s, Inches(0.4), top, Inches(12.5), Inches(1.85), fill=BG_CARD, lc=BORDER_COLOR)
+        rect(s, Inches(0.4), top, Inches(0.12), Inches(1.85), fill=col)
+        rect(s, Inches(0.4), top, Inches(12.5), Inches(0.5), fill=col)
+        tb(s, Inches(0.62), top+Inches(0.06), Inches(4.0), Inches(0.38), name, sz=14, bold=True, color=WHITE)
+        tb(s, Inches(4.8), top+Inches(0.06), Inches(2.0), Inches(0.38), "功率: " + pwr, sz=11, color=WHITE)
+        tb(s, Inches(6.9), top+Inches(0.06), Inches(2.2), Inches(0.38), "市場: " + market, sz=11, color=WHITE)
+        tb(s, Inches(9.2), top+Inches(0.06), Inches(1.5), Inches(0.38), "CAGR: " + cagr, sz=11, bold=True, color=GREEN)
+        tb(s, Inches(10.8), top+Inches(0.06), Inches(2.0), Inches(0.38), vendors, sz=10, color=LIGHT_GRAY)
+        tb(s, Inches(0.62), top+Inches(0.6), Inches(11.8), Inches(1.1), desc, sz=11, color=LIGHT_GRAY)
+    ft(s); sn(s, 15); return s

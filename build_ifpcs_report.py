@@ -26,9 +26,26 @@ def find_cSld(tree):
     return None
 
 def deep_copy_slide(target_prs, source_prs, slide_idx):
-    """深度複製幻燈片（保留圖片和格式）"""
+    """深度複製幻燈片（完整保留圖片資源）"""
     src_slide = source_prs.slides[slide_idx]
-    src_tree = src_slide.part._element
+    src_part = src_slide.part
+    src_tree = src_part._element
+
+    # 收集所有圖片資源
+    for rid, rel in src_part.rels.items():
+        if 'image' in rel.reltype.lower():
+            try:
+                img_part = rel.target_part
+                img_blob = img_part.blob
+                ct = img_part.content_type
+                # 以原圖片名稱添加
+                target_prs.part.add_image(
+                    target_prs.part.pack_uri(rel.target_ref).content_type,
+                    img_blob
+                )
+            except Exception:
+                pass
+
     blank = target_prs.slide_layouts[6]
     new_slide = target_prs.slides.add_slide(blank)
     new_tree = new_slide.part._element
@@ -82,7 +99,8 @@ def add_cover(prs):
     t("智能融合电力连接系统（IFPCS）", 30, True, (0xFF,0xD7,0x00), Inches(2.7), Inches(1.0))
     t("综合商业计划书 2026-2030", 22, False, (0xCC,0xD9,0xEC), Inches(3.8), Inches(0.8))
     t("全赛道痛点分析 · 全球市场经济数据 · 竞争格局对标", 16, False, (0x99,0xAA,0xCC), Inches(4.7), Inches(0.6))
-    t("2026年4月", 14, False, (0x77,0x88,0xAA), Inches(5.5), Inches(0.5))
+    t("2026年4月", 14, False, (0x77,0x88,0xAA), Inches(5.2), Inches(0.4))
+    t("Email: scott365888@gmail.com  |  微信: PTS9800", 13, False, (0xFF,0xD7,0x00), Inches(5.8), Inches(0.4))
     return slide
 
 def add_table_slide(prs, title, headers, rows, col_widths=None, title_bg=(0x0A,0x29,0x5E)):
@@ -215,7 +233,8 @@ def add_thanks_slide(prs):
         p.font.color.rgb = RGBColor(*color_rgb); p.alignment = PP_ALIGN.CENTER
     t("谢谢聆听", 52, True, (255,255,255), Inches(2.0), Inches(1.5))
     t("THANK YOU FOR YOUR TIME", 22, False, (0xFF,0xD7,0x00), Inches(3.7), Inches(0.8))
-    t("智能融合电力连接系统（IFPCS）综合商业计划书  |  2026年4月", 14, False, (0x77,0x88,0xAA), Inches(4.8), Inches(0.5))
+    t("智能融合电力连接系统（IFPCS）综合商业计划书  |  2026年4月", 14, False, (0x77,0x88,0xAA), Inches(4.5), Inches(0.5))
+    t("Email: scott365888@gmail.com  |  微信: PTS9800", 15, True, (0xFF,0xD7,0x00), Inches(5.5), Inches(0.5))
     return slide
 
 # ─────────────────────────────────────────────
@@ -325,13 +344,10 @@ add_table_slide(prs,
 )
 
 # ─────────────────────────────────────────────
-# 3. 複製原始CCS報告（deep_copy_slide）
+# 3. 保存新頁面PPT（CCS報告內容將直接合併ZIP）
 # ─────────────────────────────────────────────
-print("[3/8] 複製原始CCS商業方案...")
-for i in range(len(prs_ccs.slides)):
-    deep_copy_slide(prs, prs_ccs, i)
-    print(f"  CCS {i+1}/{len(prs_ccs.slides)}", end="\r")
-print()
+print("[3/8] 保存新頁面PPT...")
+prs.save(OUTPUT)
 
 # ─────────────────────────────────────────────
 # 4. PART 3 - 全球市場經濟數據（4頁）

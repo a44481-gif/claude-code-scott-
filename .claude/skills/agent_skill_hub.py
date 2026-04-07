@@ -201,7 +201,7 @@ if __name__ == "__main__":
             skills = hub.list_skills()
             print(f"\nAll Skills ({len(skills)}):")
             for s in skills:
-                print(f"  • {s['name']} ({s['type']}) - {s['usage_count']} uses")
+                print(f"  - {s['name']} ({s['type']}) - {s['usage_count']} uses")
 
         elif cmd == "info" and len(sys.argv) > 2:
             info = hub.get_skill_info(sys.argv[2])

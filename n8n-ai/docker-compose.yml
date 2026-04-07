@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  # ==================== n8n 主系統 ====================
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: psu_n8n
+    ports:
+      - "5678:5678"
+    environment:
+      # 基本配置
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD}
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=${WEBHOOK_URL}
+
+      # 執行配置
+      - EXECUTIONS_MODE=regular
+      - EXECUTIONS_TIMEOUT_MAX=600
+      - EXECUTIONS_TIMEOUT=300
+
+      # 數據庫
+      - DB_TYPE=postgresdb
+      - DB_POSTGRES_HOST=postgres
+      - DB_POSTGRES_PORT=5432
+      - DB_POSTGRES_DATABASE=${POSTGRES_DB}
+      - DB_POSTGRES_USER=${POSTGRES_USER}
+      - DB_POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_POSTGRES_SCHEMA=public
+
+      # AI API
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+
+      # 功能開關
+      - EXECUTIONS_DATA_SAVE_ON_ERROR=all
+      - EXECUTIONS_DATA_SAVE_ON_SUCCESS=all
+      - EXECUTIONS_DATA_SAVE_ON_PROGRESS=all
+      - GENERIC_TIMEZONE=${TIMEZONE:-Asia/Shanghai}
+
+    volumes:
+      - ./data:/home/node/.n8n
+      - ./workflows:/workflows
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  # ==================== PostgreSQL 數據庫 ====================
+  postgres:
+    image: postgres:15-alpine
+    container_name: psu_postgres
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== Redis 緩存 ====================
+  redis:
+    image: redis:7-alpine
+    container_name: psu_redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  # ==================== Nginx 反向代理 ====================
+  nginx:
+    image: nginx:alpine
+    container_name: psu_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    restart: unless-stopped
+    depends_on:
+      - n8n
+
+  # ==================== Watchtower 自動更新 ====================
+  watchtower:
+    image: containrrr/watchtower
+    container_name: psu_watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 86400 n8n
+    restart: unless-stopped
+
+# ==================== 網絡和存儲 ====================
+networks:
+  default:
+    name: psu_network
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

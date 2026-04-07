@@ -73,6 +73,15 @@ node scripts/manager.js schedule
 
 ---
 
+## 📞 联系方式
+
+| 方式 | 地址 |
+|------|------|
+| 📧 Email | scott365888@gmail.com |
+| 💬 微信 | pts9800 |
+
+---
+
 ## 💰 变现流程
 
 ```

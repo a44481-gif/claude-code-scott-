@@ -1,0 +1,99 @@
+# ============================================================
+# Cloud Agent Orchestrator — 完整配置
+# ============================================================
+
+# MiniMax API（M2.7 大腦）
+minimax:
+  api_key: "sk-cp-7Sf0AAq1uDMZ-EFwjwCUtApZJ-axwEATLw8gSo-DgYZ7plqkK1v-cjQiAMcB27kf-MF4BGrAIMcAW"
+  base_url: "https://api.minimax.chat/v1"
+  model: "MiniMax-Text-01"        # M2.7 旗艦
+  max_tokens: 8192
+  temperature: 0.7
+  timeout: 120                   # 秒
+
+# 對外聯絡窗口（重要！）
+contacts:
+  email: "scott365888@gmail.com"
+  wechat: "pts9800"
+  name: "Scott"
+
+# Email 寄送設定
+email:
+  smtp_server: "smtp.163.com"
+  smtp_port: 465
+  sender: "h13751019800@163.com"
+  password: "JWxaQXzrCQCWtPu3"
+  # 任務完成通知 -> 對外窗口
+  recipient: "scott365888@gmail.com"
+  # 本地存檔（可選）
+  bcc_self: "h13751019800@163.com"
+
+# 飛書設定
+feishu:
+  doc_id: "QV4gdSnpUoowfDx5NwUcscbHnrb"
+  sheet_id: "BIGjsIsXyhsPgst4t0LcwdJonQD"
+  # 對外窗口的飛書（需 open_id）
+  notify_open_id: ""
+  enabled: true
+
+# 存儲設定
+storage:
+  dir: "store"
+  max_mb: 100
+
+# 通知設定
+notification:
+  email:
+    enabled: true
+    # 每次任務完成自動發送到對外窗口
+  feishu:
+    enabled: true
+
+# HTTP 服務器
+webhook:
+  host: "0.0.0.0"
+  port: 8080
+  # WebHook 密鑰（可選，提高安全性）
+  secret: ""
+
+# 自動任務模板
+agent_templates:
+  daily_report: |
+    你是一個專業的市場分析師，服務於 scott365888@gmail.com / 微信 pts9800。
+    請分析今日（{date}）以下領域動態：
+
+    1. AMD / Intel / NVIDIA / ARM：新產品發布、價格變動、技術突破
+    2. AI PC 市場：NPU 算力競爭、Copilot+ PC 生態
+    3. 數據中心：GPU 訓練/推理市場動態
+    4. PSU 電源市場：重要品牌動態
+    5. 任何值得關注的技術新聞
+
+    請用繁體中文輸出結構化報告：
+    ## [領域] 標題
+    - 關鍵事實（時間、產品、數據）
+    - 影響分析
+    - 建議
+
+    如某領域今日無重大動態，明確說明「今日無重大更新」。
+    報告最後附上「聯絡窗口：scott365888@gmail.com / 微信 pts9800」
+
+  processor_research: |
+    請整理 2025年6月至2026年3月期間，以下廠商的最新產品動態：
+    {vendors}
+
+    請輸出結構化報告：
+    - 產品名稱、發布時間、核心規格、AI算力指標、市場定位
+    - 各廠商横向對比
+    - 採購建議
+
+    請用繁體中文，服務於 scott365888@gmail.com / 微信 pts9800。
+
+  gpu_psu_urgent: |
+    請分析以下 GPU 和 PSU 市場緊急動態：
+    {data}
+
+    輸出格式：
+    - 事件摘要
+    - 影響評估（1-10分）
+    - 建議行動
+    - 聯絡：scott365888@gmail.com / 微信 pts9800

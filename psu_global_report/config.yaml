@@ -34,10 +34,13 @@ crawler:
 
 # MiniMax API 設定
 # 請前往 https://platform.minimax.chat/ 申請 API Key
+# 模型說明：
+#   MiniMax-Text-01（M2.7）= 最新旗艦模型，超長上下文（100K+ tokens），推理能力強（推薦）
+#   abab6.5s-chat          = 中等模型，性價比高
 minimax:
-  api_key: ""                    # ← 填入您的 MiniMax API Key
+  api_key: "sk-cp-7Sf0AAq1uDMZ-EFwjwCUtApZJ-axwEATLw8gSo-DgYZ7plqkK1v-cjQiAMcB27kf-MF4BGrAIMcAW"                        # ← 填入您的 MiniMax API Key
   base_url: "https://api.minimax.chat/v1"
-  model: "MiniMax-Text-01"       # 或 "abab6.5s-chat"
+  model: "MiniMax-Text-01"            # M2.7 旗艦模型（推薦）
   max_tokens: 8192
   temperature: 0.7
 

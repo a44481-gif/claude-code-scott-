@@ -27,12 +27,16 @@ def setup_logger(
     # Remove default handler
     logger.remove()
 
-    # Console output (always)
+    # Console output — force UTF-8 encoding to avoid GBK errors
+    import io
+    _sys_stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace") \
+        if hasattr(sys.stdout, "buffer") else sys.stdout
     logger.add(
-        sys.stdout,
+        _sys_stdout,
         format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
         level=level,
         colorize=True,
+        enqueue=True,  # thread-safe for scheduled tasks
     )
 
     # File output (if log_dir specified)
@@ -49,6 +53,7 @@ def setup_logger(
             retention=retention,
             compression="zip",
             encoding="utf-8",
+            enqueue=True,
         )
 
         # Error log file
@@ -60,4 +65,5 @@ def setup_logger(
             retention=retention,
             compression="zip",
             encoding="utf-8",
+            enqueue=True,
         )

@@ -96,6 +96,10 @@ class NotificationService:
             print(f"[跳过邮件] 客户 {customer.name} 没有邮箱")
             return False
 
+        # 联系方式
+        contact_email = 'scott365888@gmail.com'
+        contact_wechat = 'PTS9800'
+
         subject = f"【SCOTT豆包賺錢】订单确认 - {order['order_id']}"
 
         html = f"""

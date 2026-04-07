@@ -1,0 +1,55 @@
+name: 漫剧出海 - 每日内容生成
+
+on:
+  # 每天早上8点（北京时间）自动运行
+  schedule:
+    - cron: '0 0 * * *'
+
+  # 也可以手动触发
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 检出代码
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      # 2. 设置 Node.js
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. 安装依赖
+      - name: 安装依赖
+        run: npm install
+
+      # 4. 生成内容
+      - name: 生成今日内容
+        run: node scripts/cloud-generator.js
+
+      # 5. 查看生成的内容
+      - name: 查看生成结果
+        run: |
+          echo "=== 今日内容 ==="
+          cat output/daily_publish.md
+
+      # 6. 上传生成的文件
+      - name: 上传生成内容
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-content-${{ github.run_number }}
+          path: |
+            output/daily_content.json
+            output/daily_publish.md
+          retention-days: 30
+
+      # 7. 提交到 GitHub（可选）
+      - name: 提交内容到仓库
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "🤖 自动更新 - ${{ github.run_number }}"
+          file_pattern: "output/*.json output/*.md"
