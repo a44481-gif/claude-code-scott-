@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  cloud-agent:
+    build:
+      context: ..
+      dockerfile: cloud_server/Dockerfile
+    container_name: ai-agent-cloud
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      # 雲端時區（UTC+8 = Asia/Shanghai）
+      - TZ=Asia/Shanghai
+      # 回調本地 URL（留空則不回調）
+      - LOCAL_WEBHOOK=
+      # MiniMax API Key（可選）
+      - MINIMAX_API_KEY=
+    volumes:
+      # 持久化數據
+      - cloud_data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  cloud_data:

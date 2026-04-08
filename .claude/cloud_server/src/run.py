@@ -15,10 +15,9 @@ Cloud Agent Server - 雲端執行所有 Agent，結果返回本地。
 
 import sys, os
 from pathlib import Path
-_ROOT = Path(__file__).resolve().parent.parent.parent  # → .claude/
+_ROOT = Path(__file__).resolve().parent.parent  # → .claude/ (from cloud_server/src/)
 sys.path.insert(0, str(_ROOT))
 
-import asyncio
 import json
 import hashlib
 import sqlite3
@@ -31,14 +30,11 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 # ── Local core (雲端副本，核心邏輯) ────────────────────────────────
-from core import classify_news_category, classify_brand
+from core import classify_news_category
 from core.base_crawler import BaseCrawler
-from core.ai_analyzer import MiniMaxAnalyzer
-from core.models import NewsItem
 
 # ── FastAPI ────────────────────────────────────────────────────────
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Query
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import httpx
 
@@ -160,15 +156,13 @@ async def run_it_news() -> List[Dict]:
 
     sources = [
         ("TechCrunch",    "https://techcrunch.com/feed/"),
-        ("AnandTech",     "https://www.anandtech.com/rss/"),
         ("Tom's Hardware","https://www.tomshardware.com/rss/"),
         ("IT之家",        "https://www.ithome.com/rss/"),
         ("ZOL",           "https://www.zol.com.cn/rss/news.xml"),
         ("CNET",          "https://www.cnet.com/rss/news/"),
         ("The Verge",     "https://www.theverge.com/rss/index.xml"),
-        # ── 京東/天貓 需要中國 IP，以下為替代方案 ──
-        ("36Kr",          "https://36kr.com/feed"),      # 36氪
-        ("愛范兒",         "https://www.ifanr.com/feed"),  # 愛范兒
+        ("36Kr",          "https://36kr.com/feed"),
+        ("愛范兒",         "https://www.ifanr.com/feed"),
     ]
 
     all_items = []
@@ -212,9 +206,7 @@ async def run_pc_parts() -> List[Dict]:
     items = []
     for kw in JD_KEYWORDS:
         try:
-            # 京東聯盟 API（需申請）或直接爬蟲
-            url = f"https://search.jd.com/Search?keyword={kw}&enc=utf-8&wq={kw}"
-            # 實際爬蟲需要 JS 渲染，這裡用京東靜態 API 示範
+            # 京東靜態頁面（需 JS 渲染，真實部署建議用 Selenium 或京東聯盟 API）
             logger.info(f"  京東關鍵詞: {kw}")
             items.append({
                 "keyword": kw,
