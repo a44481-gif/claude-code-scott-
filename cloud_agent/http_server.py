@@ -50,7 +50,7 @@ log = logging.getLogger("HTTPServer")
 def get_engine():
     global _engine
     if _engine is None:
-        from cloud_agent.cloud_agent import CloudAgentEngine, load_config
+        from cloud_agent.orchestrator import CloudAgentEngine, load_config
         _engine = CloudAgentEngine(load_config())
     return _engine
 

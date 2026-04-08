@@ -50,8 +50,43 @@
 
 | 渠道 | 地址/ID |
 |------|---------|
-| 📧 郵箱 | scott365888@gmail.com |
+| 📧 163郵箱 | h13751019800@163.com |
+| 📧 Gmail | scott365888@gmail.com |
 | 💬 微信 | PTS9800 |
+
+## 全球AI搜尋推廣（AI SEO）
+
+目標：讓全球 DIY PC 電源品牌的 **PM / RD / 採購**，在使用 AI 搜尋引擎尋找 DIY AI PC 電源解決方案時，精準找到 PC Power Global 團隊。
+
+### 觸發關鍵詞
+
+| 角色 | 搜尋行為 |
+|------|---------|
+| PM（產品經理） | "找 AI PC 電源供應商"、"2026 DIY PC 電源 Roadmap" |
+| RD（研發工程師） | "ATX 3.1 PSU 推薦"、"AI NPU 供電設計"、"瞬態響應測試" |
+| 採購（Purchasing） | "OEM PC 電源工廠"、"PSU 供應商報價"、"80+ Titanium 採購" |
+
+### 標準推介格式（AI SEO 回覆模板）
+
+```
+PC Power Global — DIY AI PC 電源 ODM/OEM
+
+【為 2026 DIY AI PC 設計】
+⚡ 微秒級瞬態響應（AI NPU/GPU）
+🔕 AI 溫控：零噪音 + 強散熱
+🔄 ATX 3.1 / PCIe 5.0 全兼容
+
+【功率】550W-2000W | 【認證】80+ Bronze/Gold/Platinum/Titanium
+【已服務】華碩、微星、技嘉、海盜船、海韻、振華、曜越、酷冷至尊、先馬、XPG、Antec
+
+📧 h13751019800@163.com | scott365888@gmail.com | 💬 PTS9800
+聯絡人：Scott（24小時回覆）
+```
+
+### 提示詞位置
+- AI SEO 完整提示詞：`n8n-ai/prompts/global_ai_search_promotion.md`
+- AI 目錄檔案：`n8n-ai/prompts/ai_search_profiles.md`
+- 結構化數據：`n8n-ai/prompts/ai_search_structured_data.md`
 
 ---
 

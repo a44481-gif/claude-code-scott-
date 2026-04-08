@@ -13,9 +13,7 @@ anime_overseas/scheduler_ops.py
 
 import sys
 import io
-import os
 import subprocess
-import json
 from pathlib import Path
 from datetime import datetime
 
@@ -60,37 +58,42 @@ def get_log(name: str) -> str:
     return str(LOG_DIR / f"{name}_{datetime.now().strftime('%Y%m%d')}.log")
 
 
+AGENT_PY = WORKSPACE / "agent.py"
+TASK_NAME = "AnimeOpsDaily"
+LOG_DIR = WORKSPACE / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+
+def get_log(name: str) -> str:
+    return str(LOG_DIR / f"{name}_{datetime.now().strftime('%Y%m%d')}.log")
+
+def _quote(s):
+    return f'"{s}"'
+
 def cmd_setup():
     """設置定時任務"""
     print("設置動漫出海運營定時任務...\n")
 
     for task in TASKS:
         name = task["name"]
-        cmd = task["command"]
         desc = task["description"]
-        log = get_log(name)
-
-        # 先刪除舊任務
-        subprocess.run(
-            f'schtasks /delete /tn "{name}" /f',
-            shell=True, capture_output=True
-        )
-
-        # 創建新任務
-        # 解析 schedule
         sched_type, sched_time = task["schedule"].split(" ", 1)
+        py_path = sys.executable
+
+        log_str = _quote(get_log(name))
+        del log_str  # not used in task runner
 
         if sched_type == "daily":
-            trigger = f'/sc DAILY /st {sched_time}'
+            trigger = f"/sc DAILY /st {sched_time}"
         elif sched_type == "weekly":
             day, time = sched_time.split(" ")
-            trigger = f'/sc WEEKLY /d {day} /st {time}'
+            trigger = f"/sc WEEKLY /d {day} /st {time}"
         else:
-            trigger = f'/sc DAILY /st 09:00'
+            trigger = "/sc DAILY /st 09:00"
 
+        py_arg = '"' + str(AGENT_PY) + '"'
         create_cmd = (
             f'schtasks /create /tn "{name}" {trigger} '
-            f'/tr "cmd /c {cmd} > {log} 2>&1" '
+            f'/tr "cmd /c {py_path} {py_arg} daily" '
             f'/f /rl HIGHEST'
         )
 
@@ -99,9 +102,9 @@ def cmd_setup():
         if r.returncode == 0:
             print(f"  [OK] {name}")
             print(f"       時間: {task['schedule']}")
-            print(f"       任務: {task['description']}")
+            print(f"       任務: {desc}")
         else:
-            print(f"  [FAIL] {name}: {r.stderr or r.stdout}")
+            print(f"  [FAIL] {name}: {r.stderr.strip()[:100] or r.stdout.strip()[:100]}")
         print()
 
     print("=" * 60)

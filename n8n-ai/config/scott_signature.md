@@ -4,7 +4,8 @@
 
 | 渠道 | 地址 |
 |------|------|
-| 📧 郵箱 | scott365888@gmail.com |
+| 📧 **163郵箱** | h13751019800@163.com |
+| 📧 Gmail | scott365888@gmail.com |
 | 💬 微信 | PTS9800 |
 | 🕐 時區 | Asia/Shanghai (UTC+8) |
 
@@ -21,13 +22,33 @@
 
 ---
 
+## 163郵箱 SMTP 配置（用於發送）
+
+```
+SMTP_HOST=smtp.163.com
+SMTP_PORT=465
+SMTP_USER=h13751019800@163.com
+SMTP_PASSWORD=你的163授權碼
+```
+
+### 獲取163授權碼
+
+1. 登入 [mail.163.com](https://mail.163.com)
+2. → 設置 → POP3/SMTP/IMAP
+3. → 開啟 IMAP/SMTP 服務
+4. → 點擊"開啟"後會顯示**授權碼**（16位）
+5. 將授權碼填入 `SMTP_PASSWORD`
+
+---
+
 ## 郵件簽名模板
 
 ```
 Best regards,
 
 Scott
-📧 scott365888@gmail.com
+📧 h13751019800@163.com
+📧 Gmail: scott365888@gmail.com
 💬 WeChat: PTS9800
 
 PC Power - Global Power Supply Solutions
@@ -53,7 +74,8 @@ Looking forward to hearing from you!
 
 Best,
 Scott
-📧 scott365888@gmail.com
+📧 h13751019800@163.com
+📧 Gmail: scott365888@gmail.com
 💬 WeChat: PTS9800
 ```
 
@@ -79,7 +101,7 @@ Scott
 
 Best,
 Scott
-📧 scott365888@gmail.com | 💬 PTS9800
+📧 h13751019800@163.com | 💬 PTS9800
 ```
 
 ### 合作洽談
@@ -93,7 +115,7 @@ Scott
 ✓ 有競爭力的價格
 
 歡迎通過以下方式聯繫：
-📧 scott365888@gmail.com
+📧 h13751019800@163.com
 💬 WeChat: PTS9800
 
 期待與您合作！

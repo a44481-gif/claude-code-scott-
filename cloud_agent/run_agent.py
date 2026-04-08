@@ -17,7 +17,7 @@ import sys, os, logging
 from pathlib import Path
 
 # 確保項目根目錄在路徑中
-_ROOT = Path(__file__).parent.resolve()
+_ROOT = Path(__file__).parent.resolve().parent.resolve()  # d:/claude mini max 2.7/
 sys.path.insert(0, str(_ROOT))
 
 logging.basicConfig(
@@ -88,7 +88,7 @@ def main():
     args = parser.parse_args()
 
     # ── 延遲導入避免啟動慢 ───────────────────────────────────────────────
-    from cloud_agent.cloud_agent import (
+    from cloud_agent.orchestrator import (
         CloudAgentEngine, load_config, TaskStatus
     )
 

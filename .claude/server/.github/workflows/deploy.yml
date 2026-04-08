@@ -1,0 +1,34 @@
+# GitHub Actions - 自动部署到 Railway
+
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Deploy to Railway
+        uses: Railway Deploy Action@v1
+        with:
+          railway-token: ${{ secrets.RAILWAY_TOKEN }}
+          service: scott-payment-system
+        env:
+          ALIPAY_MODE: personal
+          PERSONAL_ALIPAY_ACCOUNT: 13751019800
