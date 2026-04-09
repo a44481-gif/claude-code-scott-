@@ -1,0 +1,185 @@
+# GlobalOPS · 平台配置
+# 多平台账号矩阵
+
+platforms:
+  youtube:
+    enabled: true
+    default_region: global
+    video_config:
+      title_max_chars: 100
+      description_max_chars: 5000
+      tags_max: 500
+      best_post_times:
+        global: ["15:00-18:00 UTC", "09:00-11:00 UTC"]
+        sea: ["19:00-22:00 ICT", "12:00-14:00 ICT"]
+      aspect_ratio: "9:16"
+      max_duration_seconds: 60
+      thumbnail_size: "1280x720"
+    content_types:
+      - shorts
+      - long_form
+    monetization: true
+    cpm_usd: 3.50
+
+  tiktok:
+    enabled: true
+    default_region: global
+    video_config:
+      title_max_chars: 150
+      description_max_chars: 2200
+      tags_max: 30
+      best_post_times:
+        global: ["19:00-22:00 UTC", "07:00-09:00 UTC"]
+        sea: ["20:00-23:00 ICT", "12:00-13:00 ICT"]
+      aspect_ratio: "9:16"
+      max_duration_seconds: 600
+      thumbnail_size: "1080x1920"
+    content_types:
+      - video
+      - image_series
+    monetization: true
+    cpm_usd: 0.50
+    requires_proxy: false
+
+  instagram:
+    enabled: false
+    default_region: global
+    video_config:
+      caption_max_chars: 2200
+      tags_max: 30
+      best_post_times:
+        global: ["11:00-13:00 UTC", "19:00-21:00 UTC"]
+      aspect_ratio: "4:5"
+      max_duration_seconds: 90
+      thumbnail_size: "1080x1350"
+    content_types:
+      - reels
+      - carousel
+    monetization: false
+    cpm_usd: 2.00
+
+  facebook:
+    enabled: false
+    default_region: global
+    video_config:
+      title_max_chars: 255
+      description_max_chars: 63206
+      tags_max: 225
+      best_post_times:
+        global: ["13:00-16:00 UTC"]
+      aspect_ratio: "9:16"
+      max_duration_seconds: 90
+      thumbnail_size: "1200x628"
+    content_types:
+      - reels
+      - video
+    monetization: false
+    cpm_usd: 1.50
+
+  pinterest:
+    enabled: false
+    default_region: global
+    video_config:
+      title_max_chars: 500
+      description_max_chars: 500
+      tags_max: 20
+      best_post_times:
+        global: ["20:00-23:00 UTC", "14:00-17:00 UTC"]
+      aspect_ratio: "2:3"
+      thumbnail_size: "1000x1500"
+    content_types:
+      - video
+      - image
+    monetization: false
+    cpm_usd: 0.80
+
+# 地区配置
+regions:
+  global:
+    timezone: "UTC"
+    languages: ["en"]
+    best_currencies: ["USD"]
+  southeast_asia:
+    timezone: "Asia/Bangkok"
+    languages: ["en", "id", "vi", "th"]
+    best_currencies: ["USD", "IDR", "VND", "THB"]
+    target_platforms: ["youtube", "tiktok"]
+  middle_east:
+    timezone: "Asia/Dubai"
+    languages: ["ar", "en"]
+    best_currencies: ["USD", "AED"]
+    target_platforms: ["youtube", "tiktok"]
+  latin_america:
+    timezone: "America/Mexico_City"
+    languages: ["es", "pt", "en"]
+    best_currencies: ["USD", "BRL", "MXN"]
+    target_platforms: ["youtube", "tiktok"]
+  south_asia:
+    timezone: "Asia/Kolkata"
+    languages: ["hi", "en"]
+    best_currencies: ["USD", "INR"]
+    target_platforms: ["youtube"]
+  east_asia:
+    timezone: "Asia/Tokyo"
+    languages: ["ja", "ko", "en"]
+    best_currencies: ["USD", "JPY", "KRW"]
+    target_platforms: ["youtube", "tiktok"]
+
+# 内容题材热度配置
+themes:
+  龙王:
+    hot_level: viral
+    avg_views_bucket: high
+    best_regions: [southeast_asia, middle_east, latin_america]
+    ctr_bonus: 1.3
+  逆袭:
+    hot_level: high
+    avg_views_bucket: high
+    best_regions: [southeast_asia, south_asia, latin_america]
+    ctr_bonus: 1.2
+  虐渣:
+    hot_level: high
+    avg_views_bucket: mid
+    best_regions: [southeast_asia, global]
+    ctr_bonus: 1.1
+  重生:
+    hot_level: medium
+    avg_views_bucket: mid
+    best_regions: [southeast_asia, global]
+    ctr_bonus: 1.0
+  神医:
+    hot_level: medium
+    avg_views_bucket: mid
+    best_regions: [global, east_asia]
+    ctr_bonus: 0.9
+  系统:
+    hot_level: high
+    avg_views_bucket: high
+    best_regions: [southeast_asia, global]
+    ctr_bonus: 1.25
+
+# 变现配置
+monetization:
+  payout_threshold_usd: 100
+  platforms:
+    youtube:
+      min_subscribers: 1000
+      watch_hours_required: 4000
+    tiktok:
+      min_followers: 10000
+      min_views_required: 100000
+
+# 账号矩阵示例
+accounts:
+  - platform: youtube
+    account_id: yaoweiba3300
+    account_name: "Manhua Sharing"
+    region: global
+    language: en
+    status: active
+  # - platform: youtube
+  #   account_id: your_second_account
+  #   account_name: "Account 2"
+  #   region: sea
+  #   language: id
+  #   status: active

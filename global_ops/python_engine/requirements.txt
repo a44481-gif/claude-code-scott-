@@ -1,0 +1,21 @@
+# GlobalOPS · Python 执行引擎依赖
+psycopg2-binary>=2.9.9
+PyYAML>=6.0.1
+python-dotenv>=1.0.0
+google-api-python-client>=2.100.0
+google-auth>=2.23.0
+google-auth-oauthlib>=1.1.0
+google-auth-oauthlib>=1.1.0
+selenium>=4.15.0
+webdriver-manager>=4.0.1
+Pillow>=10.1.0
+openai>=1.3.0
+deepl>=1.15.0
+requests>=2.31.0
+python-dateutil>=2.8.2
+schedule>=1.2.0
+ffmpeg-python>=0.2.0
+pandas>=2.1.0
+openpyxl>=3.1.2
+plotly>=5.18.0
+kaleido>=0.2.1
