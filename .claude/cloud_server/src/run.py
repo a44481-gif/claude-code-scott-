@@ -15,7 +15,7 @@ Cloud Agent Server - 雲端執行所有 Agent，結果返回本地。
 
 import sys, os
 from pathlib import Path
-_ROOT = Path(__file__).resolve().parent.parent  # → .claude/ (from cloud_server/src/)
+_ROOT = Path(__file__).resolve().parent.parent.parent  # → D:\claude mini max 2.7\.claude\
 sys.path.insert(0, str(_ROOT))
 
 import json
@@ -171,14 +171,14 @@ async def run_it_news() -> List[Dict]:
     for name, url in sources:
         try:
             crawler = CloudRSSCrawler(name, url)
-            await crawler.run()
-            for item in crawler.results:
+            items = await crawler.run()
+            for item in items:
                 h = hashlib.md5((item["title"] + item["url"]).encode()).hexdigest()
                 if h not in seen:
                     seen.add(h)
                     item["category"] = classify_news_category(item["title"] + " " + item.get("summary", ""))
                     all_items.append(item)
-            logger.info(f"  [{name}] +{len(crawler.results)} 篇")
+            logger.info(f"  [{name}] +{len(items)} 篇")
         except Exception as e:
             logger.warning(f"  [{name}] 失敗: {e}")
 
@@ -240,8 +240,9 @@ async def run_msi_monitor() -> List[Dict]:
     for name, url in urls.items():
         try:
             crawler = CloudRSSCrawler(f"MSI-{name}", url)
-            await crawler.run()
-            all_items.extend(crawler.results)
+            items = await crawler.run()
+            all_items.extend(items)
+            logger.info(f"  [MSI-{name}] +{len(items)} 篇")
         except Exception as e:
             logger.warning(f"  [MSI-{name}] 失敗: {e}")
 
@@ -324,6 +325,15 @@ class TriggerResponse(BaseModel):
     status: str
     message: str
 
+@app.post("/trigger/all", response_model=Dict)
+async def trigger_all(background: BackgroundTasks):
+    """觸發所有 Agent"""
+    background.add_task(run_it_news)
+    background.add_task(run_pc_parts)
+    background.add_task(run_msi_monitor)
+    background.add_task(run_report)
+    return {"status": "triggered", "agents": ["it_news", "pc_parts", "msi_monitor", "report"]}
+
 @app.post("/trigger/{agent}", response_model=TriggerResponse)
 async def trigger_agent(agent: str, background: BackgroundTasks):
     """觸發指定 Agent"""
@@ -339,15 +349,6 @@ async def trigger_agent(agent: str, background: BackgroundTasks):
     update_run(agent, "pending")
     background.add_task(agents[agent])
     return TriggerResponse(agent=agent, status="triggered", message=f"{agent} 已加入執行佇列")
-
-@app.post("/trigger/all", response_model=Dict)
-async def trigger_all(background: BackgroundTasks):
-    """觸發所有 Agent"""
-    background.add_task(run_it_news)
-    background.add_task(run_pc_parts)
-    background.add_task(run_msi_monitor)
-    background.add_task(run_report)
-    return {"status": "triggered", "agents": ["it_news", "pc_parts", "msi_monitor", "report"]}
 
 # ── Results ───────────────────────────────────────────────────────
 
@@ -432,8 +433,181 @@ async def shutdown():
     logger.info("🛑 雲端 Agent Server 關閉")
 
 # ════════════════════════════════════════════════════════════════════
-#  Run
+#  Unified Chat Interface - 單一窗口對應所有代理人
 # ════════════════════════════════════════════════════════════════════
+
+class ChatMessage(BaseModel):
+    message: str
+    history: Optional[List[Dict]] = []
+
+class ChatResponse(BaseModel):
+    reply: str
+    agent: str
+    data: Optional[Dict] = None
+    verdict: Optional[str] = None
+    alerts: Optional[List[Dict]] = []
+    sources: Optional[List[str]] = None
+
+# ── Intent Classification ────────────────────────────────────────
+
+def classify_intent(message: str) -> str:
+    """根據關鍵詞分類意圖"""
+    msg = message.lower()
+    # IT 新聞
+    if any(k in msg for k in ["新聞", "news", "科技", "趨勢", "熱點", "晶片", "ai", "人工智慧", "最新", "今天有什麼"]):
+        return "it_news"
+    # PC 零組件 / 價格
+    if any(k in msg for k in ["價格", "價格追蹤", "降價", "特價", "顯卡", "cpu", "硬碟", "記憶體", "rtx", "ryzen", "京東", "亞馬遜", "pchome"]):
+        return "pc_parts"
+    # MSI 監控
+    if any(k in msg for k in ["msi", "微星", "新產品", "新品發布", "優惠活動", "活動"]):
+        return "msi_monitor"
+    # 綜合報告
+    if any(k in msg for k in ["報告", "report", "總結", "摘要", "一週", "本週", "今日總結"]):
+        return "report"
+    # 全部執行
+    if any(k in msg for k in ["全部", "所有", "執行", "跑一下", "更新", "刷新"]):
+        return "all"
+    return "unknown"
+
+# ── Result Formatter ─────────────────────────────────────────────
+
+def format_it_news(data: List[Dict]) -> str:
+    if not data:
+        return "今日尚無新聞數據。"
+    cats = {}
+    srcs = {}
+    for item in data[:20]:
+        cats[item.get("category","General")] = cats.get(item.get("category","General"), 0) + 1
+        srcs[item.get("source","")] = srcs.get(item.get("source",""), 0) + 1
+    top_cats = sorted(cats.items(), key=lambda x: -x[1])[:3]
+    lines = [f"共收集 {len(data)} 篇新聞，涵蓋 {len(srcs)} 個來源："]
+    lines.append("  最新頭條：")
+    for item in data[:5]:
+        lines.append(f"  • [{item.get('source','')}] {item.get('title','')[:50]}")
+    lines.append(f"  熱點類別：{', '.join(f'{c}({n})' for c,n in top_cats)}")
+    return "\n".join(lines)
+
+def format_pc_parts(data: List[Dict]) -> str:
+    if not data:
+        return "尚無價格數據。"
+    lines = [f"追蹤 {len(data)} 個關鍵詞："]
+    for item in data:
+        lines.append(f"  • {item.get('keyword','N/A')} @ {item.get('source','N/A')}")
+    return "\n".join(lines)
+
+def format_msi(data: List[Dict]) -> str:
+    if not data:
+        return "MSI 監控目前無數據（RSS 被封）。"
+    lines = [f"MSI {len(data)} 條更新："]
+    for item in data[:5]:
+        lines.append(f"  • {item.get('title','')[:50]}")
+    return "\n".join(lines)
+
+def format_report(data: Dict) -> str:
+    if not data:
+        return "尚無報告數據。"
+    return (f"📊 綜合報告（{data.get('generated_at','')[:10]}）：\n"
+            f"  • IT 新聞：{data.get('it_news_count', 0)} 篇\n"
+            f"  • PC 零組件：{data.get('pc_parts_count', 0)} 筆\n"
+            f"  • MSI 更新：{data.get('msi_updates_count', 0)} 條")
+
+# ── Chat Endpoint ────────────────────────────────────────────────
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat(msg: ChatMessage, background: BackgroundTasks):
+    """
+    統一聊天入口：自然語言 → 自動路由 → 執行代理人 → 結構化回覆。
+    用戶只需對一個窗口說話，系統自動分發給正確的代理人。
+    """
+    message = msg.message.strip()
+    intent = classify_intent(message)
+
+    # 意圖不明時引導用戶
+    if intent == "unknown":
+        return ChatResponse(
+            reply=(
+                "我目前支援以下幾種請求，請用自然語言描述：\n"
+                "  📰 「今天有什麼科技新聞？」→ IT 新聞收集\n"
+                "  💰 「RTX 4090 價格？」 → PC 零組件價格追蹤\n"
+                "  🎮 「MSI 有新產品嗎？」 → MSI 官網監控\n"
+                "  📊 「給我本週摘要報告」 → 綜合報告生成\n"
+                "  🔄 「執行全部代理人」 → 全部跑一遍"
+            ),
+            agent="orchestrator",
+            verdict="引導回覆",
+        )
+
+    # 觸發對應代理人
+    agent_map = {
+        "it_news":     (run_it_news,     format_it_news),
+        "pc_parts":    (run_pc_parts,    format_pc_parts),
+        "msi_monitor": (run_msi_monitor, format_msi),
+        "report":      (run_report,      format_report),
+        "all":         (None,            None),
+    }
+
+    # 全部執行
+    if intent == "all":
+        background.add_task(run_it_news)
+        background.add_task(run_pc_parts)
+        background.add_task(run_msi_monitor)
+        background.add_task(run_report)
+        return ChatResponse(
+            reply="✅ 已下發全部代理人任務，結果將在 30 秒內陸續出爐。\n可用 /results/{agent}/latest 查詢進度。",
+            agent="orchestrator",
+            verdict="全部觸發",
+        )
+
+    # 單一代理人：直接執行（同步等待結果）
+    agent_fn = agent_map[intent][0]
+    try:
+        result = await agent_fn()
+    except Exception as e:
+        logger.error(f"[chat] {intent} 執行失敗: {e}")
+        return ChatResponse(
+            reply=f"❌ 執行失敗：{str(e)}",
+            agent=intent,
+            verdict="錯誤",
+        )
+
+    # 格式化回覆
+    if intent == "it_news":
+        formatted = format_it_news(result)
+        verdict = f"共 {len(result)} 篇，涵蓋 {len(set(i.get('source','') for i in result))} 個來源"
+        alerts = [{"type": "ai_boom" if i.get('category') == 'AI Infrastructure' else "hot",
+                   "message": i.get("title","")[:50]} for i in result[:3] if i.get("category") == "AI Infrastructure"]
+        srcs = list(set(i.get("source","") for i in result))
+    elif intent == "pc_parts":
+        formatted = format_pc_parts(result)
+        verdict = f"追蹤 {len(result)} 個關鍵詞"
+        alerts = []
+        srcs = list(set(i.get("source","") for i in result))
+    elif intent == "msi_monitor":
+        formatted = format_msi(result)
+        verdict = f"MSI {len(result)} 條更新"
+        alerts = []
+        srcs = []
+    else:
+        formatted = format_report(result)
+        verdict = "報告已生成"
+        alerts = []
+        srcs = []
+
+    reply = f"✅ [{intent}] 執行完成\n\n{formatted}"
+    return ChatResponse(
+        reply=reply,
+        agent=intent,
+        data={"items": result, "count": len(result)} if isinstance(result, list) else result,
+        verdict=verdict,
+        alerts=alerts[:5],
+        sources=srcs[:10] if srcs else None,
+    )
+
+@app.get("/chat")
+async def chat_get(q: str = Query(..., min_length=1)):
+    """GET 版 chat（方便瀏覽器測試）"""
+    return await chat(ChatMessage(message=q), BackgroundTasks())
 
 if __name__ == "__main__":
     import uvicorn

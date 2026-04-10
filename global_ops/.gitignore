@@ -1,0 +1,52 @@
+# GitHub Actions
+.github/
+!.github/workflows/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+*.whl
+
+# Node.js
+node_modules/
+content_engine/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Output
+output/
+*.json
+
+# Database
+*.db
+*.sqlite3
+
+# Credentials
+client_secrets.json
+youtube_token.json
+youtube_cookies.json
+*_session.json
